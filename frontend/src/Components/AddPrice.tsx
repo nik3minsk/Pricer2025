@@ -101,6 +101,24 @@ function AddPrice() {
         setDateResponse(data);
     };
 
+    const saveData = async () => {
+
+        const response = await axios.post(`${BACK_URL}/api/addPrice`,
+            {
+                priceName: priceName,
+                articleColNumber: articleColNumber
+
+            }, {
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            }
+        );
+
+        const data = await response.data;
+        setDateResponse(data);
+    };
+
     const handleReset = () => {
         setValue('');
         setValue1('');
@@ -129,8 +147,6 @@ function AddPrice() {
         setOwnFreeOnStockColNumber('');
         setOwnPriceForSiteColNumber('');
 
-        // setColor('');
-        // setUpholstery('');
         // setHasAirConditioning(false);
     };
 
@@ -184,19 +200,6 @@ function AddPrice() {
                                      // required
                         />
 
-
-                        {/*<TextInput*/}
-                        {/*    value={color}*/}
-                        {/*    onChange={(event) => setColor(event.currentTarget.value)}*/}
-                        {/*    placeholder="Введите цвет"*/}
-                        {/*    required*/}
-                        {/*/>*/}
-                        {/*<TextInput*/}
-                        {/*    value={upholstery}*/}
-                        {/*    onChange={(event) => setUpholstery(event.currentTarget.value)}*/}
-                        {/*    placeholder="Введите тип обивки"*/}
-                        {/*    required*/}
-                        {/*/>*/}
                         {/*<Checkbox*/}
                         {/*    checked={hasAirConditioning}*/}
                         {/*    onChange={(event) => setHasAirConditioning(event.currentTarget.checked)}*/}
@@ -239,7 +242,7 @@ function AddPrice() {
                     </div>
                 </div>
                 <div style={{display: 'flex', justifyContent: 'flex-start', gap: '1em', marginTop: '1em'}}>
-                    <Button type="submit">Отправить</Button>
+                    <Button onClick={saveData}>Отправить</Button>
                     <Button onClick={handleReset}>Обнулить значения</Button>
                     <Button onClick={handleDateSubmit}>Запросить курс НБ РБ</Button>
                 </div>

@@ -11,4 +11,14 @@ export default defineConfig({
       },
     },
   },
+  // server: {
+  //   host: 'localhost',
+  //   port: 5173,
+  //   proxy: {
+  //     '/home': 'http://localhost:5173/home'
+  //   }
+  // }
+  server: {
+    open: 'home'
+  }
 })

@@ -1,5 +1,5 @@
 import '@mantine/core/styles.css';
-import './App.css';
+// import './App.css';
 import {AppShell, MantineProvider} from '@mantine/core';
 
 import Header from './Components/Header.tsx';
@@ -7,22 +7,23 @@ import AuthorisationPage from "./Components/AuthorisationPage.tsx";
 import AddPrice from "./Components/AddPrice.tsx";
 import {Route} from "wouter";
 import Text1 from "./Components/Text1.tsx";
-import PriceCard from "./Components/Pricer.tsx";
+import PriceCard from "./Components/pricer.tsx";
+import HomePage from "./Components/HomePage.tsx";
 
 function App() {
     return (
         <MantineProvider>
             <AppShell padding="md">
-                <Header/>
+                {/*<Header/>*/}
                 <AppShell.Main>
+                    <Route path="/home">
+                        {params => <HomePage {...params}/>}
+                    </Route>
                     <Route path="/header">
                         {params => <Header {...params}/>}
                     </Route>
                     <Route path="/addprice">
                         {params => <AddPrice {...params}/>}
-                    </Route>
-                    <Route path="/Pricer">
-                        {params => <PriceCard {...params}/>}
                     </Route>
                     <Route path="/AuthorisationPage">
                         {params => <AuthorisationPage {...params}/>}

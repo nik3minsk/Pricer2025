@@ -38,7 +38,7 @@ const Header = (): React.JSX.Element => {
     const items = links.map((link) => {
         const menuItems = link.links?.map((item) => (
             <Menu.Item key={item.link}>
-                <Button onClick={() => navigate(item.link)}>
+                <Button fullWidth variant="subtle" onClick={() => navigate(item.link)}>
                     {item.label}
                 </Button>
             </Menu.Item>
