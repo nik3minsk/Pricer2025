@@ -4,7 +4,7 @@ package by.belgonor.pricer2025.controller;
 import by.belgonor.pricer2025.dto.SellerRequest;
 import by.belgonor.pricer2025.entity.*;
 import by.belgonor.pricer2025.repository.CatRepo;
-import by.belgonor.pricer2025.repository.CurrencyRepo;
+import by.belgonor.pricer2025.repository.CurrencyNbRepo;
 import by.belgonor.pricer2025.repository.RulesForBusinessRepo;
 import by.belgonor.pricer2025.repository.SellerRepo;
 import by.belgonor.pricer2025.service.SellerService;
@@ -19,10 +19,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 
 @Slf4j
@@ -30,7 +27,7 @@ import java.util.Map;
 @CrossOrigin(origins = "http://localhost:5173")
 public class MainController {
     @Autowired
-    private CurrencyRepo currencyRepo;
+    private CurrencyNbRepo currencyNbRepo;
 
 
     @Autowired
@@ -106,12 +103,17 @@ public class MainController {
 //        return jsonData;
 //    }
 
-    @PostMapping("/api/nbcurrency")
-    public String getNbCurrency(@RequestBody Map<String, String> payload) {
-        String date = payload.get("date");
-        System.out.println("Received date: " + date);
-        return "Received date: " + date;
-    }
+//    @GetMapping("/api/nbcurrency")
+//    public String getNbCurrency(@RequestBody Map<String, String> payload) {
+//        String date = payload.get("date");
+//        System.out.println("Received date: " + date);
+//        return date;
+//    }
+
+//    @GetMapping("/currencylist")
+//    public List<Currency> getCurrencyList() {
+//        return currencyRepo.findAll();
+//    }
 
 
     @PostMapping("/api/add")
@@ -177,12 +179,12 @@ public class MainController {
         // Преобразование SellerRequest в Seller
 
 //        код валюты
-        Currency currency = new Currency();
-        currency.setCurrencyCode(643);
-        currency.setBaseCurrencyCode(933);
-        currency.setDate(LocalDate.now());
-        System.out.println("currency = " + currency);
-        currencyRepo.save(currency);
+        CurrencyNb currency = new CurrencyNb();
+//        currency.setCurrencyCode(643);
+//        currency.setBaseCurrencyCode(933);
+//        currency.setDate(LocalDate.now());
+//        System.out.println("currency = " + currency);
+        currencyNbRepo.save(currency);
 
 //      Преобразуем бизнес-правила
         RulesForBusiness rulesForBusiness = new RulesForBusiness();

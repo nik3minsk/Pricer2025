@@ -7,7 +7,6 @@ import AuthorisationPage from "./Components/AuthorisationPage.tsx";
 import AddPrice from "./Components/AddPrice.tsx";
 import {Route} from "wouter";
 import Text1 from "./Components/Text1.tsx";
-import PriceCard from "./Components/pricer.tsx";
 import HomePage from "./Components/HomePage.tsx";
 
 function App() {
@@ -19,16 +18,16 @@ function App() {
                     <Route path="/home">
                         {params => <HomePage {...params}/>}
                     </Route>
-                    <Route path="/header">
-                        {params => <Header {...params}/>}
-                    </Route>
+                    {/*<Route path="/header">*/}
+                    {/*    {params => <Header {...params}/>}*/}
+                    {/*</Route>*/}
                     <Route path="/addprice">
                         {params => <AddPrice {...params}/>}
                     </Route>
                     <Route path="/AuthorisationPage">
                         {params => <AuthorisationPage {...params}/>}
                     </Route>
-                    <Route path="/faq">
+                    <Route path="/text1">
                         {params => <Text1 {...params}/>}
                     </Route>
                 </AppShell.Main>

@@ -11,14 +11,19 @@ export default defineConfig({
       },
     },
   },
-  // server: {
-  //   host: 'localhost',
-  //   port: 5173,
-  //   proxy: {
-  //     '/home': 'http://localhost:5173/home'
-  //   }
-  // }
   server: {
-    open: 'home'
+    host: 'localhost',
+    port: 5173,
+    open: '/home',
+    proxy: {
+      // '/home': 'http://localhost:5173/home',
+      // open: 'home',
+      '/api': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+        secure: false,
+      },
+      // open: 'home'
+    }
   }
 })

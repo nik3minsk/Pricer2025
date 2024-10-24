@@ -3,7 +3,6 @@ import '@mantine/core/styles.css';
 import '@mantine/dates/styles.css';
 import '@mantine/dropzone/styles.css';
 import { Button, Group, Modal, NumberInput, Stack, TextInput, Title } from "@mantine/core";
-import CurrencySelector from './CurrencySelector';
 import { useDisclosure } from "@mantine/hooks";
 import axios from 'axios';
 
@@ -117,9 +116,7 @@ const HomePage = (): React.JSX.Element => {
                         <Stack>
                             <TextInput value={priceName} onChange={(event) => setPriceName(event.currentTarget.value)} placeholder="* Название прайса" required />
                             <TextInput value={pathToPrice} onChange={(event) => setPathToPrice(event.currentTarget.value)} placeholder="* Ссылка на прайс" required />
-                            {/*<NumberInput value={currencyCode} onChange={setCurrencyCode} placeholder="* Код валюты" required />*/}
-                            <CurrencySelector onCurrencySelect={setCurrencyCode} />
-
+                            <NumberInput value={currencyCode} onChange={setCurrencyCode} placeholder="* Код валюты" required />
                             <NumberInput value={vatRate} onChange={setVatRate} placeholder="* Учтенный % НДС" required />
                             <NumberInput value={currencyBankCoeff} onChange={setCurrencyBankCoeff} placeholder="Коэфициент банковских потерь" />
                             <NumberInput value={coeffDeliveryCost} onChange={setCoeffDeliveryCost} placeholder="Коэфициент стоимости доставки" />
