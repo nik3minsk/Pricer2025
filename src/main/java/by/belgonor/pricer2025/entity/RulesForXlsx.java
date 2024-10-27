@@ -1,5 +1,6 @@
 package by.belgonor.pricer2025.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
@@ -10,8 +11,10 @@ import org.hibernate.annotations.ColumnDefault;
 @Setter
 @Entity
 @Table(name = "rules_for_xlsx")
+//@JsonIgnoreProperties(value = {"hibernateLazyInitializer", "handler"})
 public class RulesForXlsx {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
     private Integer id;
 

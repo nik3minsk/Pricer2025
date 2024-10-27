@@ -13,9 +13,8 @@ const Text1 = () => {
     const [generalNumberTest, setGeneralNumberTest] = useState('');
 
     useEffect(() => {
-        const isGeneralPriceBool = isGeneralPrice === 'true';
-        console.log('isGeneralPrice:', isGeneralPriceBool);
-        console.log('priceNumber:', parseInt(priceNumber, 10));
+        console.log('isGeneralPrice:', isGeneralPrice);
+        console.log('priceNumber:', priceNumber);
     }, [isGeneralPrice, priceNumber]);
 
     const test = async () => {
@@ -28,10 +27,8 @@ const Text1 = () => {
         }
     };
 
-    let localIsGeneralPrice: boolean = isGeneralPrice === 'true';
-    localIsGeneralPrice = true;  // Присваиваем новое значение
-    let localPriceNumber: number = parseInt(priceNumber, 10);
-    localPriceNumber = 12;
+    const localIsGeneralPrice = true;
+    const localPriceNumber = 3;
 
     return (
         <Stack>
@@ -44,13 +41,11 @@ const Text1 = () => {
                 console.log(test());
                 console.log('Selected currency ID:', priceCurrencyChoice);
             }}>Knopka</Button>
-            {localIsGeneralPrice && (
-                <TextInput
-                    value={generalNumberTest}
-                    onChange={(event) => setGeneralNumberTest(event.currentTarget.value)}
-                    placeholder="Введите код основного прайса"
-                />
-            )}
+            <TextInput
+                value={generalNumberTest}
+                onChange={(event) => setGeneralNumberTest(event.currentTarget.value)}
+                placeholder="Введите код основного прайса"
+            />
             <Text>
                 isGeneralPrice: {localIsGeneralPrice.toString()}
             </Text>

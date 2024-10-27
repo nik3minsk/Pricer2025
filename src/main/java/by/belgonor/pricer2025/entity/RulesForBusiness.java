@@ -1,5 +1,6 @@
 package by.belgonor.pricer2025.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
@@ -12,6 +13,7 @@ import java.math.BigDecimal;
 @Setter
 @Entity
 @Table(name = "rules_for_business")
+//@JsonIgnoreProperties(value = {"hibernateLazyInitializer", "handler"})
 public class RulesForBusiness {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

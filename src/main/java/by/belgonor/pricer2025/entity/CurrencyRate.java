@@ -14,7 +14,6 @@ import java.time.LocalDate;
 @Table(name = "currency_rate")
 public class CurrencyRate {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
     private Integer id;
 
@@ -31,13 +30,4 @@ public class CurrencyRate {
     @Column(name = "date", nullable = false)
     private LocalDate date;
 
-    @Override
-    public String toString() {
-        return "CurrencyRate{" +
-                "id=" + id +
-                ", currency=" + currency +
-                ", currencyRate=" + currencyRate +
-                ", date=" + date +
-                '}';
-    }
 }

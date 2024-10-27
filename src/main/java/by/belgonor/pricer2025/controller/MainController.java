@@ -45,7 +45,7 @@ public class MainController {
 
     @GetMapping("/api/cat")
     public String giveCatListener() {
-        Cat cat = new Cat("Barsik", 5, 10);
+        TopCat cat = new TopCat("Barsik", 5, 10);
         String jsonData = null;
         try {
             jsonData = objectMapper.writeValueAsString(cat);
@@ -58,7 +58,7 @@ public class MainController {
 
     @PostMapping("/api/special")
     public String giveCatListenerPost(@RequestParam String name) {
-        Cat cat = new Cat(name, 5, 10);
+        TopCat cat = new TopCat(name, 5, 10);
 //        Cat cat1 = new Cat(name, 5, 10);
 
         String jsonData = null;
@@ -73,7 +73,7 @@ public class MainController {
 
     @PostMapping("/api/currency")
     public String giveCurrencyValuePost(@RequestParam String value, String value1) {
-        Cat cat = new Cat(value, 5, Integer.valueOf(value1));
+        TopCat cat = new TopCat(value, 5, Integer.valueOf(value1));
 //        Cat cat1 = new Cat(name, 5, 10);
         System.out.println("value = " + value);
         System.out.println("value1 = " + value1);
@@ -117,18 +117,18 @@ public class MainController {
 
 
     @PostMapping("/api/add")
-    public void addCat(@RequestBody Cat cat) {
+    public void addCat(@RequestBody TopCat cat) {
         log.info("New Row: " + catRepo.save(cat));
 //        catRepo.save(cat);
     }
 
     @GetMapping("/api/all")
-    public List<Cat> getAllCats() {
+    public List<TopCat> getAllCats() {
         return catRepo.findAll();
     }
 
     @GetMapping("/api/cat-manage")
-    public Cat getCatById(@RequestParam int id) {
+    public TopCat getCatById(@RequestParam int id) {
 //        return catRepo.findById(id).get();
         return catRepo.findById(id).orElse(null);
     }
@@ -139,13 +139,18 @@ public class MainController {
     }
 
     @PutMapping("/api/cat-manage")
-    public void updateCat(@RequestBody Cat cat) {
+    public void updateCat(@RequestBody TopCat cat) {
         if (!catRepo.existsById(cat.getId())) {
             catRepo.save(cat);
         }
         log.info("Updated row: " + catRepo.save(cat));
         return;
     }
+
+//    @GetMapping("/api/sellers")
+//    public List<Seller> getAllSellers() {
+//        return sellerRepo.findAll();
+//    }
 
 //    @PostMapping("/api/addPrice")
 //    public void savePrice(@RequestBody Document document){
@@ -166,58 +171,58 @@ public class MainController {
 //        log.info("Saving price: " + priceRequest);
 //        return ResponseEntity.ok("Price added successfully" + priceRequest);
 //    }
-
-    @Autowired
-    private SellerService sellerService;
-
-
-    @PostMapping("/api/addPrice2")
-    public ResponseEntity<String> addPrice(@RequestBody SellerRequest sellerRequest) {
-        // Логирование данных
-        log.info("Saving price details: " + sellerRequest.getSellerDetails());
-        log.info("Saving column details: " + sellerRequest.getRules_for_xlsx_columns());
-        // Преобразование SellerRequest в Seller
-
-//        код валюты
-        CurrencyNb currency = new CurrencyNb();
-//        currency.setCurrencyCode(643);
-//        currency.setBaseCurrencyCode(933);
-//        currency.setDate(LocalDate.now());
-//        System.out.println("currency = " + currency);
-        currencyNbRepo.save(currency);
-
-//      Преобразуем бизнес-правила
-        RulesForBusiness rulesForBusiness = new RulesForBusiness();
-        rulesForBusiness.setCurrencyCode(currency);
-//        rulesForBusiness.setCurrencyCoefficient(BigDecimal.valueOf(Double.parseDouble(sellerRequest.getSellerDetails().getCurrencyBankCoeff())));
-        System.out.println("sellerRequest.getSellerDetails().getCurrencyBankCoeff() = " + sellerRequest.getSellerDetails().getCurrencyBankCoeff());
-//        BigDecimal proba = new BigDecimal(sellerRequest.getSellerDetails().getCurrencyBankCoeff());
-//        System.out.println("proba = " + proba);
-        rulesForBusiness.setCurrencyCoefficient(new  BigDecimal(sellerRequest.getSellerDetails().getCurrencyBankCoeff()));
-        rulesForBusiness.setDeliveryCoefficient(new BigDecimal(sellerRequest.getSellerDetails().getCoeffDeliveryCost()));
-        rulesForBusiness.setVatPercentInPrice(new BigDecimal(sellerRequest.getSellerDetails().getVatRate()));
-        rulesForBusiness.setMinOrderSum(new BigDecimal(sellerRequest.getSellerDetails().getMinOrderSum()));
-        System.out.println("rulesForBusiness = " + rulesForBusiness);
-        rulesForBusinessRepo.save(rulesForBusiness);
-
-//        Правила ссылок по столбцам
-        RulesForXlsx rulesForXlsx = new RulesForXlsx();
-
-
-
-//      Ссылки продавца = бизнес правила+правила по столбцам
-        Seller seller = new Seller();
-        seller.setPriceName(sellerRequest.getSellerDetails().getPriceName());
-        seller.setPathToPrice(sellerRequest.getSellerDetails().getPathToPrice());
-        seller.setEconomicRules(rulesForBusiness);
-        seller.setXlsPriceRules(rulesForXlsx);
-        System.out.println("seller = " + seller);
-//        sellerRepo.save(seller);
-        // Убедитесь, что все необходимые поля заполняются
-//        sellerService.saveSaler(seller);
-//        System.out.println("sellerRequest = " + sellerRequest);
-
-        return ResponseEntity.ok("Price added successfully!!!   " + sellerRequest);
-    }
+//
+//    @Autowired
+//    private SellerService sellerService;
+//
+//
+//    @PostMapping("/api/addPrice2")
+//    public ResponseEntity<String> addPrice(@RequestBody SellerRequest sellerRequest) {
+//        // Логирование данных
+//        log.info("Saving price details: " + sellerRequest.getSellerDetails());
+//        log.info("Saving column details: " + sellerRequest.getRules_for_xlsx_columns());
+//        // Преобразование SellerRequest в Seller
+//
+////        код валюты
+//        CurrencyNb currency = new CurrencyNb();
+////        currency.setCurrencyCode(643);
+////        currency.setBaseCurrencyCode(933);
+////        currency.setDate(LocalDate.now());
+////        System.out.println("currency = " + currency);
+//        currencyNbRepo.save(currency);
+//
+////      Преобразуем бизнес-правила
+//        RulesForBusiness rulesForBusiness = new RulesForBusiness();
+//        rulesForBusiness.setCurrencyCode(currency);
+////        rulesForBusiness.setCurrencyCoefficient(BigDecimal.valueOf(Double.parseDouble(sellerRequest.getSellerDetails().getCurrencyBankCoeff())));
+//        System.out.println("sellerRequest.getSellerDetails().getCurrencyBankCoeff() = " + sellerRequest.getSellerDetails().getCurrencyBankCoeff());
+////        BigDecimal proba = new BigDecimal(sellerRequest.getSellerDetails().getCurrencyBankCoeff());
+////        System.out.println("proba = " + proba);
+//        rulesForBusiness.setCurrencyCoefficient(new  BigDecimal(sellerRequest.getSellerDetails().getCurrencyBankCoeff()));
+//        rulesForBusiness.setDeliveryCoefficient(new BigDecimal(sellerRequest.getSellerDetails().getCoeffDeliveryCost()));
+//        rulesForBusiness.setVatPercentInPrice(new BigDecimal(sellerRequest.getSellerDetails().getVatRate()));
+//        rulesForBusiness.setMinOrderSum(new BigDecimal(sellerRequest.getSellerDetails().getMinOrderSum()));
+//        System.out.println("rulesForBusiness = " + rulesForBusiness);
+//        rulesForBusinessRepo.save(rulesForBusiness);
+//
+////        Правила ссылок по столбцам
+//        RulesForXlsx rulesForXlsx = new RulesForXlsx();
+//
+//
+//
+////      Ссылки продавца = бизнес правила+правила по столбцам
+//        Seller seller = new Seller();
+//        seller.setPriceName(sellerRequest.getSellerDetails().getPriceName());
+//        seller.setPathToPrice(sellerRequest.getSellerDetails().getPathToPrice());
+//        seller.setEconomicRules(rulesForBusiness);
+//        seller.setXlsPriceRules(rulesForXlsx);
+//        System.out.println("seller = " + seller);
+////        sellerRepo.save(seller);
+//        // Убедитесь, что все необходимые поля заполняются
+////        sellerService.saveSaler(seller);
+////        System.out.println("sellerRequest = " + sellerRequest);
+//
+//        return ResponseEntity.ok("Price added successfully!!!   " + sellerRequest);
+//    }
 
 }

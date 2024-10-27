@@ -23,11 +23,13 @@ a:hover {
 }
 
 body {
-  margin: 0;
+  margin: 20px;
   display: flex;
   place-items: center;
   min-width: 320px;
   min-height: 100vh;
+  width: 80%;
+
 }
 
 h1 {
@@ -99,3 +101,12 @@ button:focus-visible {
 .linkLabel {
   margin-right: rem(5px);
 }
+
+
+.modal-centered {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+

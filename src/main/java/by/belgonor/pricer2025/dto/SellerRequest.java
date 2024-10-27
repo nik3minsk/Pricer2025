@@ -9,13 +9,13 @@ import lombok.extern.slf4j.Slf4j;
 @Setter
 public class SellerRequest {
     private SellerDetails sellerDetails;
-    private Rules_for_xlsx_columns rules_for_xlsx_columns;
+    private Rules_for_xlsx_columnsDTO rules_for_xlsx_columns;
 
 
     public SellerRequest() {
     }
 
-    public SellerRequest(SellerDetails sellerDetails, Rules_for_xlsx_columns rules_for_xlsx_columns) {
+    public SellerRequest(SellerDetails sellerDetails, Rules_for_xlsx_columnsDTO rules_for_xlsx_columns) {
         this.sellerDetails = sellerDetails;
         this.rules_for_xlsx_columns = rules_for_xlsx_columns;
     }

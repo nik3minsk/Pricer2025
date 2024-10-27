@@ -1,15 +1,18 @@
 package by.belgonor.pricer2025.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.ColumnDefault;
 
 @Getter
 @Setter
 @Entity
 @Table(name = "sellers")
+//@JsonIgnoreProperties(value = {"hibernateLazyInitializer", "handler"})
 public class Seller {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -34,14 +37,9 @@ public class Seller {
     @JoinColumn(name = "xls_price_rules", nullable = false)
     private RulesForXlsx xlsPriceRules;
 
-    @Override
-    public String toString() {
-        return "Seller{" +
-                "id=" + id +
-                ", priceName='" + priceName + '\'' +
-                ", pathToPrice='" + pathToPrice + '\'' +
-                ", economicRules=" + economicRules +
-                ", xlsPriceRules=" + xlsPriceRules +
-                '}';
-    }
+    @NotNull
+    @ColumnDefault("0")
+    @Column(name = "is_general_price", nullable = false)
+    private Boolean isGeneralPrice = false;
+
 }

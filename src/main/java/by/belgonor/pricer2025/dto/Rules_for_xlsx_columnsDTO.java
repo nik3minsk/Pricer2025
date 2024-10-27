@@ -7,7 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 @Getter
 @Setter
 @Slf4j
-public class Rules_for_xlsx_columns {
+public class Rules_for_xlsx_columnsDTO {
     private String brandColNumber;
     private String articleColNumber;
     private String productCategoryColNumber;
@@ -21,11 +21,13 @@ public class Rules_for_xlsx_columns {
     private String ownReservedOnStockColNumber;
     private String ownFreeOnStockColNumber;
     private String ownPriceForSiteColNumber;
+    private String headerRowNumber;
+    private String startPriceRowNumber;
 
-    public Rules_for_xlsx_columns() {
+    public Rules_for_xlsx_columnsDTO() {
     }
 
-    public Rules_for_xlsx_columns(String brandColNumber, String articleColNumber, String productCategoryColNumber, String productNameColNumber, String priceColNumber, String onStockColNumber, String barcodeColNumber, String tnvedColNumber, String ownPriceColNumber, String ownOnStockColNumber, String ownReservedOnStockColNumber, String ownFreeOnStockColNumber, String ownPriceForSiteColNumber) {
+    public Rules_for_xlsx_columnsDTO(String brandColNumber, String articleColNumber, String productCategoryColNumber, String productNameColNumber, String priceColNumber, String onStockColNumber, String barcodeColNumber, String tnvedColNumber, String ownPriceColNumber, String ownOnStockColNumber, String ownReservedOnStockColNumber, String ownFreeOnStockColNumber, String ownPriceForSiteColNumber, String headerRowNumber, String startPriceRowNumber) {
         this.brandColNumber = brandColNumber;
         this.articleColNumber = articleColNumber;
         this.productCategoryColNumber = productCategoryColNumber;
@@ -39,11 +41,13 @@ public class Rules_for_xlsx_columns {
         this.ownReservedOnStockColNumber = ownReservedOnStockColNumber;
         this.ownFreeOnStockColNumber = ownFreeOnStockColNumber;
         this.ownPriceForSiteColNumber = ownPriceForSiteColNumber;
+        this.headerRowNumber = headerRowNumber;
+        this.startPriceRowNumber = startPriceRowNumber;
     }
 
     @Override
     public String toString() {
-        return "Rules_for_xlsx_columns{" +
+        return "Rules_for_xlsx_columnsDTO{" +
                 "brandColNumber='" + brandColNumber + '\'' +
                 ", articleColNumber='" + articleColNumber + '\'' +
                 ", productCategoryColNumber='" + productCategoryColNumber + '\'' +
@@ -57,6 +61,8 @@ public class Rules_for_xlsx_columns {
                 ", ownReservedOnStockColNumber='" + ownReservedOnStockColNumber + '\'' +
                 ", ownFreeOnStockColNumber='" + ownFreeOnStockColNumber + '\'' +
                 ", ownPriceForSiteColNumber='" + ownPriceForSiteColNumber + '\'' +
+                ", headerRowNumber=" + headerRowNumber +
+                ", startPriceRowNumber=" + startPriceRowNumber +
                 '}';
     }
 }

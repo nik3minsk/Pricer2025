@@ -14,9 +14,10 @@ interface PriceAddAndEditProps {
     opened: boolean;
     close: () => void;
     setServerResponse: (response: string) => void;
+    setResponseType: (type: string) => void;
 }
 
-const PriceAddAndEdit: React.FC<PriceAddAndEditProps> = ({ isGeneralPrice, priceNumber, opened, close, setServerResponse }) => {
+const PriceAddAndEdit: React.FC<PriceAddAndEditProps> = ({ isGeneralPrice = false, priceNumber, opened, close, setServerResponse, setResponseType  }) => {
     const [priceName, setPriceName] = useState('');
     const [pathToPrice, setPathToPrice] = useState('');
     const [currencyCode, setCurrencyCode] = useState<number | string>('');
@@ -38,6 +39,10 @@ const PriceAddAndEdit: React.FC<PriceAddAndEditProps> = ({ isGeneralPrice, price
     const [ownFreeOnStockColNumber, setOwnFreeOnStockColNumber] = useState<number | string>('');
     const [ownPriceForSiteColNumber, setOwnPriceForSiteColNumber] = useState<number | string>('');
 
+    const [headerRowNumber, setHeaderRowNumber] = useState<number | string>('');
+    const [startPriceRowNumber, setStartPriceRowNumber] = useState<number | string>('');
+
+
     const handleClearValues = () => {
         setPriceName('');
         setPathToPrice('');
@@ -46,6 +51,11 @@ const PriceAddAndEdit: React.FC<PriceAddAndEditProps> = ({ isGeneralPrice, price
         setCurrencyBankCoeff('');
         setCoeffDeliveryCost('');
         setMinOrderSum('');
+
+
+        setStartPriceRowNumber('');
+        setHeaderRowNumber('');
+
         setBrandColNumber('');
         setArticleColNumber('');
         setProductCategoryColNumber('');
@@ -63,7 +73,7 @@ const PriceAddAndEdit: React.FC<PriceAddAndEditProps> = ({ isGeneralPrice, price
     };
 
     const handleSaveData = async () => {
-        if (!priceName || !pathToPrice || !currencyCode || !vatRate || !brandColNumber || !articleColNumber || !productNameColNumber || !priceColNumber) {
+        if (!priceName || !pathToPrice || !currencyCode || typeof vatRate === 'undefined' || !brandColNumber || !articleColNumber || !productNameColNumber || !priceColNumber || !startPriceRowNumber) {
             alert('Заполните все обязательные поля');
             return;
         }
@@ -81,6 +91,7 @@ const PriceAddAndEdit: React.FC<PriceAddAndEditProps> = ({ isGeneralPrice, price
                 minOrderSum
             },
             rules_for_xlsx_columns: {
+
                 brandColNumber,
                 articleColNumber,
                 productCategoryColNumber,
@@ -93,10 +104,12 @@ const PriceAddAndEdit: React.FC<PriceAddAndEditProps> = ({ isGeneralPrice, price
                 ownOnStockColNumber,
                 ownReservedOnStockColNumber,
                 ownFreeOnStockColNumber,
-                ownPriceForSiteColNumber
+                ownPriceForSiteColNumber,
+                startPriceRowNumber,
+                headerRowNumber,
             }
         };
-
+        console.log(data)
         try {
             const response = await axios.post(`${BACK_URL}/api/addPrice2`, data, {
                 headers: {
@@ -104,19 +117,29 @@ const PriceAddAndEdit: React.FC<PriceAddAndEditProps> = ({ isGeneralPrice, price
                 }
             });
             const responseData = await response.data;
-            setServerResponse(responseData);
+            // setServerResponse(responseData);
+            setServerResponse('Прайс добавлен'); // Устанавливаем сообщение
+            setResponseType('success');
+            close(); // Закрыть модальное окно после успешного сохранения
         } catch (error) {
             setServerResponse('Ошибка при сохранении данных');
+            setResponseType('error');
         }
+
+
+
+
+
+
     };
 
     return (
-        <Modal size={'auto'} opened={opened} onClose={close} title="Authentication">
+        <Modal size={'auto'} opened={opened} onClose={close} title="Authentication" centered className="modal-centered">
             <Stack>
                 <Group grow>
                     <Title ta={"center"} w={"33%"} order={4}>Сведения о прайсе продавца</Title>
                     <Title ta={"center"} w={"33%"} order={4}>Номера столбцов для парсинга</Title>
-                    <Title ta={"center"} w={"33%"} order={4}>Настройки своего прайса</Title>
+                    { isGeneralPrice && <Title ta={"center"} w={"33%"} order={4}>Настройки своего прайса</Title> }
                 </Group>
                 <Group align={'start'} grow>
                     <Stack>
@@ -126,9 +149,11 @@ const PriceAddAndEdit: React.FC<PriceAddAndEditProps> = ({ isGeneralPrice, price
                         <NumberInput value={vatRate} onChange={setVatRate} placeholder="* Учтенный % НДС" required />
                         <NumberInput value={currencyBankCoeff} onChange={setCurrencyBankCoeff} placeholder="Коэфициент банковских потерь" />
                         <NumberInput value={coeffDeliveryCost} onChange={setCoeffDeliveryCost} placeholder="Коэфициент стоимости доставки" />
-                        <NumberInput value={minOrderSum} onChange={setMinOrderSum} placeholder="Минимальная сумма заказа" />
+                        {/*<NumberInput value={minOrderSum} onChange={setMinOrderSum} placeholder="Минимальная сумма заказа" />*/}
                     </Stack>
                     <Stack>
+                        <NumberInput value={startPriceRowNumber} onChange={setStartPriceRowNumber} placeholder="* Начало прайса, столбец №" required />
+                        <NumberInput value={headerRowNumber} onChange={setHeaderRowNumber} placeholder="* Заголовок, столбец №" required />
                         <NumberInput value={brandColNumber} onChange={setBrandColNumber} placeholder="* Бренд, столбец №" required />
                         <NumberInput value={articleColNumber} onChange={setArticleColNumber} placeholder="* Артикул, столбец №" required />
                         <NumberInput value={productCategoryColNumber} onChange={setProductCategoryColNumber} placeholder="Категория, столбец №" />
@@ -138,13 +163,15 @@ const PriceAddAndEdit: React.FC<PriceAddAndEditProps> = ({ isGeneralPrice, price
                         <NumberInput value={barcodeColNumber} onChange={setBarcodeColNumber} placeholder="Баркод, столбец №" />
                         <NumberInput value={tnvedColNumber} onChange={setTnvedColNumber} placeholder="ТНВЭД, столбец №" />
                     </Stack>
-                    <Stack>
-                        <NumberInput value={ownPriceColNumber} onChange={setOwnPriceColNumber} placeholder="Наша цена, столбец №" />
-                        <NumberInput value={ownOnStockColNumber} onChange={setOwnOnStockColNumber} placeholder="Наш остаток, столбец №" />
-                        <NumberInput value={ownReservedOnStockColNumber} onChange={setOwnReservedOnStockColNumber} placeholder="Наш резерв, столбец №" />
-                        <NumberInput value={ownFreeOnStockColNumber} onChange={setOwnFreeOnStockColNumber} placeholder="У нас свободно, столбец №" />
-                        <NumberInput value={ownPriceForSiteColNumber} onChange={setOwnPriceForSiteColNumber} placeholder="Цена для сайта, столбец №" />
-                    </Stack>
+                    {isGeneralPrice && (
+                        <Stack>
+                            <NumberInput value={ownPriceColNumber} onChange={setOwnPriceColNumber} placeholder="Наша цена, столбец №" />
+                            <NumberInput value={ownOnStockColNumber} onChange={setOwnOnStockColNumber} placeholder="Наш остаток, столбец №" />
+                            <NumberInput value={ownReservedOnStockColNumber} onChange={setOwnReservedOnStockColNumber} placeholder="Наш резерв, столбец №" />
+                            <NumberInput value={ownFreeOnStockColNumber} onChange={setOwnFreeOnStockColNumber} placeholder="У нас свободно, столбец №" />
+                            <NumberInput value={ownPriceForSiteColNumber} onChange={setOwnPriceForSiteColNumber} placeholder="Цена для сайта, столбец №" />
+                        </Stack>
+                    )}
                 </Group>
                 <Group grow>
                     <Button onClick={handleSaveData}>Сохранить</Button>
@@ -153,6 +180,6 @@ const PriceAddAndEdit: React.FC<PriceAddAndEditProps> = ({ isGeneralPrice, price
             </Stack>
         </Modal>
     );
-}
+};
 
 export default PriceAddAndEdit;
