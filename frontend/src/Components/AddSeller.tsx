@@ -103,7 +103,8 @@
 //
 //     const saveData = async () => {
 //
-//         const response = await axios.post(`${BACK_URL}/api/addPrice`,
+//         // const response = await axios.post(`${BACK_URL}/api/addPrice`,
+//         const response = await axios.post(`${BACK_URL}/api/addSeller`,
 //             {
 //                 priceName: priceName,
 //                 articleColNumber: articleColNumber
@@ -190,14 +191,14 @@
 //                         <NumberInput value={priceColNumber} onChange={setPriceColNumber} placeholder="Цена, столбец №" required/>
 //                         <NumberInput value={onStockColNumber} onChange={setOnStockColNumber}
 //                                      placeholder="Наличие, столбец №"
-//                                      // required
+//                             // required
 //                         />
 //                         <NumberInput value={barcodeColNumber} onChange={setBarcodeColNumber}
 //                                      placeholder="Баркод, столбец №"
-//                                      // required
+//                             // required
 //                         />
 //                         <NumberInput value={tnvedColNumber} onChange={setTnvedColNumber} placeholder="ТНВЭД, столбец №"
-//                                      // required
+//                             // required
 //                         />
 //
 //                         {/*<Checkbox*/}

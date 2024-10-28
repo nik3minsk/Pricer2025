@@ -12,7 +12,8 @@ public class SellerService {
     @Autowired
     private SellerRepo sellerRepo;
 
-    public void saveSaler(Seller seller) {
+    public void addSeller(Seller seller) {
         sellerRepo.save(seller);
     }
+
 }

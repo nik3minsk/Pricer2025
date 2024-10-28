@@ -17,7 +17,7 @@ interface PriceAddAndEditProps {
     setResponseType: (type: string) => void;
 }
 
-const PriceAddAndEdit: React.FC<PriceAddAndEditProps> = ({ isGeneralPrice = false, priceNumber, opened, close, setServerResponse, setResponseType  }) => {
+const SellerAddAndEdit: React.FC<PriceAddAndEditProps> = ({ isGeneralPrice = false, priceNumber, opened, close, setServerResponse, setResponseType  }) => {
     const [priceName, setPriceName] = useState('');
     const [pathToPrice, setPathToPrice] = useState('');
     const [currencyCode, setCurrencyCode] = useState<number | string>('');
@@ -111,7 +111,8 @@ const PriceAddAndEdit: React.FC<PriceAddAndEditProps> = ({ isGeneralPrice = fals
         };
         console.log(data)
         try {
-            const response = await axios.post(`${BACK_URL}/api/addPrice2`, data, {
+            // const response = await axios.post(`${BACK_URL}/api/addPrice2`, data, {
+            const response = await axios.post(`${BACK_URL}/api/addSeller`, data, {
                 headers: {
                     'Content-Type': 'application/json',
                 }
@@ -152,8 +153,8 @@ const PriceAddAndEdit: React.FC<PriceAddAndEditProps> = ({ isGeneralPrice = fals
                         {/*<NumberInput value={minOrderSum} onChange={setMinOrderSum} placeholder="Минимальная сумма заказа" />*/}
                     </Stack>
                     <Stack>
-                        <NumberInput value={startPriceRowNumber} onChange={setStartPriceRowNumber} placeholder="* Начало прайса, столбец №" required />
-                        <NumberInput value={headerRowNumber} onChange={setHeaderRowNumber} placeholder="* Заголовок, столбец №" required />
+                        <NumberInput value={startPriceRowNumber} onChange={setStartPriceRowNumber} placeholder="* Начало прайса, строка №" required />
+                        <NumberInput value={headerRowNumber} onChange={setHeaderRowNumber} placeholder="* Заголовок, строка №" required />
                         <NumberInput value={brandColNumber} onChange={setBrandColNumber} placeholder="* Бренд, столбец №" required />
                         <NumberInput value={articleColNumber} onChange={setArticleColNumber} placeholder="* Артикул, столбец №" required />
                         <NumberInput value={productCategoryColNumber} onChange={setProductCategoryColNumber} placeholder="Категория, столбец №" />
@@ -182,4 +183,4 @@ const PriceAddAndEdit: React.FC<PriceAddAndEditProps> = ({ isGeneralPrice = fals
     );
 };
 
-export default PriceAddAndEdit;
+export default SellerAddAndEdit;

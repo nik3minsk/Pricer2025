@@ -2,12 +2,12 @@ import '@mantine/core/styles.css';
 // import './App.css';
 import {AppShell, MantineProvider} from '@mantine/core';
 
-import Header from './Components/Header.tsx';
+// import Header from './Components/Header.tsx';
 import AuthorisationPage from "./Components/AuthorisationPage.tsx";
-import AddPrice from "./Components/AddPrice.tsx";
 import {Route} from "wouter";
 import Text1 from "./Components/Text1.tsx";
 import HomePage from "./Components/HomePage.tsx";
+// import AddSeller from "./Components/AddSeller.tsx";
 
 function App() {
     return (
@@ -23,6 +23,10 @@ function App() {
                     {/*</Route>*/}
                     <Route path="/addprice">
                         {params => <AddPrice {...params}/>}
+                    </Route>
+                    <Route path="/addseller">
+                        {/*{params => <AddSeller {...params}/>}*/}
+                        {params => <AddSeller {...params}/>}
                     </Route>
                     <Route path="/AuthorisationPage">
                         {params => <AuthorisationPage {...params}/>}

@@ -5,7 +5,7 @@ import '@mantine/dates/styles.css';
 import '@mantine/dropzone/styles.css';
 import { Button, Group, Stack, Checkbox } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
-import PriceAddAndEdit from './priceAddAndEdit';
+import SellerAddAndEdit from './SellerAddAndEdit.tsx';
 import axios from "axios";
 
 const BACK_URL = import.meta.env.VITE_BACK_URL;
@@ -25,25 +25,29 @@ const HomePage = (): React.JSX.Element => {
         isGeneralPrice: boolean;
     }
 
+    const fetchSellers = async () => {
+        try {
+            const response = await axios.get(`${BACK_URL}/api/sellers`);
+            setSellers(response.data);
+            console.log(response);
+        } catch (error) {
+            console.error('Ошибка при получении данных о продавцах:', error);
+        }
+    };
+
     useEffect(() => {
-        const fetchSellers = async () => {
-            try {
-                const response = await axios.get(`${BACK_URL}/api/sellers`);
-                setSellers(response.data);
-                console.log(response);
-            } catch (error) {
-                console.error('Ошибка при получении данных о продавцах:', error);
-            }
-        };
         fetchSellers();
     }, []);
+
+
 
     useEffect(() => {
         if (serverResponse) {
             const timer = setTimeout(() => {
                 setServerResponse('');
                 setResponseType('');
-            }, 2000);
+                fetchSellers();
+            }, 700);
             return () => clearTimeout(timer);
         }
     }, [serverResponse]);
@@ -71,30 +75,39 @@ const HomePage = (): React.JSX.Element => {
     return (
         <Stack align="center" justify="center" style={{ minHeight: '100vh' }}>
             <Group align="start" style={{ width: '100%', border: '2px solid #ccc', padding: '20px', borderRadius: '10px' }}>
-                <div style={{ flex: 1 }}>
-                    <h2>Прайс-листы</h2>
-                    <div style={{ maxHeight: '600px', overflowY: 'auto', paddingRight: '10px', minHeight: '300' }}>
+                <div style={{flex: 1}}>
+                    <h2>Список продавцов</h2>
+                    <h2>Список продавцов</h2>
+                    <div style={{maxHeight: '600px', overflowY: 'auto', paddingRight: '10px', minHeight: '300px'}}>
                         {sellers.slice(0, 10).map(seller => (
                             <Checkbox
                                 key={seller.id}
                                 label={`${seller.priceName} - ${seller.pathToPrice}`}
                                 checked={selectedSellerId === seller.id}
                                 onChange={() => handleCheckboxChange(seller.id)}
-                                style={{ marginBottom: '10px' }}
+                                style={{
+                                    marginBottom: '10px',
+                                    // backgroundColor: seller.isGeneralPrice ? '#ffffff' : 'transparent', // Light blue background for seller with id=1
+                                    color: seller.isGeneralPrice  ? 'green' : 'inherit' // Green text for seller with id=1
+                                    // backgroundColor: seller.isGeneralPrice ? '#d0eaff' : 'transparent' // Highlight seller with id=1
+                                }}
                             />
                         ))}
                     </div>
+
                 </div>
-                <div style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                    <Button onClick={openGeneralPrice} fullWidth style={{ marginBottom: '10px' }}>Добавить собственный прайс</Button>
-                    <Button onClick={openSupplierPrice} fullWidth style={{ marginBottom: '10px' }}>Добавить прайс поставщика</Button>
+                <div style={{flexShrink: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center'}}>
+                    <Button onClick={openGeneralPrice} fullWidth style={{marginBottom: '10px'}}>Добавить собственный
+                        прайс</Button>
+                    <Button onClick={openSupplierPrice} fullWidth style={{marginBottom: '10px'}}>Добавить
+                        поставщика</Button>
                     <Button onClick={handleDelete} fullWidth>Удалить прайс</Button>
                     {serverResponse && (
-                        <pre style={{ marginTop: '20px', color: 'green' }}>{serverResponse}</pre>
+                        <pre style={{marginTop: '20px', color: 'green'}}>{serverResponse}</pre>
                     )}
                 </div>
             </Group>
-            <PriceAddAndEdit
+            <SellerAddAndEdit
                 isGeneralPrice={true}
                 priceNumber={0}
                 opened={openedGeneralPrice}
@@ -102,7 +115,7 @@ const HomePage = (): React.JSX.Element => {
                 setServerResponse={setServerResponse}
                 setResponseType={setResponseType}
             />
-            <PriceAddAndEdit
+            <SellerAddAndEdit
                 isGeneralPrice={false}
                 priceNumber={0}
                 opened={openedSupplierPrice}
