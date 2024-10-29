@@ -4,6 +4,7 @@ import by.belgonor.pricer2025.dto.SellerDTO;
 import by.belgonor.pricer2025.dto.SellerRequest;
 import by.belgonor.pricer2025.entity.*;
 import by.belgonor.pricer2025.repository.*;
+import by.belgonor.pricer2025.service.SellerService;
 import by.belgonor.pricer2025.service.XlsxParse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,142 +47,38 @@ public class SellerController {
         log.info("Saving price details: " + sellerRequest.getSellerDetails());
         log.info("Saving column details: " + sellerRequest.getRules_for_xlsx_columns());
 
+//        Создание блока бизнес-правил для продавца
+        RulesForBusiness rulesForBusiness = new RulesForBusiness();
         // поиск кода валюты по id для записи в бизнес-правила поставщика
-        CurrencyNb currency = new CurrencyNb();
         Integer currencyId = Integer.parseInt(sellerRequest.getSellerDetails().getCurrencyCode());
-        currency = currencyNbRepo.findById(currencyId).get();
-        System.out.println("currency  sout= " + currency);
+        rulesForBusiness.setCurrencyCode(currencyNbRepo.findById(currencyId).get());
 
         // заполнение остальных полей бизнес-правил поставщика, если поля пустые, присваиваем значения по умолчанию = 1
-        RulesForBusiness rulesForBusiness = new RulesForBusiness();
-        rulesForBusiness.setCurrencyCode(currency);
-        rulesForBusiness.setCurrencyCoefficient(
-                sellerRequest.getSellerDetails().getCurrencyBankCoeff() == null || sellerRequest.getSellerDetails().getCurrencyBankCoeff().isEmpty()
-                        ? BigDecimal.valueOf(1)
-                        : new BigDecimal(sellerRequest.getSellerDetails().getCurrencyBankCoeff())
-        );
-        rulesForBusiness.setDeliveryCoefficient(
-                sellerRequest.getSellerDetails().getCoeffDeliveryCost() == null || sellerRequest.getSellerDetails().getCoeffDeliveryCost().isEmpty()
-                ? BigDecimal.valueOf(1)
-                : new BigDecimal(sellerRequest.getSellerDetails().getCoeffDeliveryCost())
-        );
-        rulesForBusiness.setVatPercentInPrice(
-                sellerRequest.getSellerDetails().getVatRate() == null || sellerRequest.getSellerDetails().getVatRate().isEmpty()
-                        ? BigDecimal.valueOf(1)
-                        : new BigDecimal(sellerRequest.getSellerDetails().getVatRate())
-        );
-        rulesForBusiness.setMinOrderSum(
-                sellerRequest.getSellerDetails().getMinOrderSum() == null || sellerRequest.getSellerDetails().getMinOrderSum().isEmpty()
-                        ? BigDecimal.valueOf(1)
-                        : new BigDecimal(sellerRequest.getSellerDetails().getMinOrderSum())
-        );
-        System.out.println("rulesForBusiness = " + rulesForBusiness);
-
+        SellerService.setRulesForBusiness(rulesForBusiness, sellerRequest);
 //        сохраняем бизнес-правила для нового поставщика
         rulesForBusinessRepo.save(rulesForBusiness);
 
-
-        //        сохраняем поля с номерами столбцов для парсинга
+//        сохраняем поля с номерами столбцов для парсинга
         RulesForXlsx rulesForXlsx = new RulesForXlsx();
+        SellerService.setRulesForXlsx(rulesForXlsx, sellerRequest);
 
-        rulesForXlsx.setHeaderStringNumber(
-                sellerRequest.getRules_for_xlsx_columns().getHeaderRowNumber() != null && !sellerRequest.getRules_for_xlsx_columns().getHeaderRowNumber().isEmpty()
-                        ? Integer.parseInt(sellerRequest.getRules_for_xlsx_columns().getHeaderRowNumber())
-                        : 0);
-
-        rulesForXlsx.setStartPriceDataRowNumber(
-                sellerRequest.getRules_for_xlsx_columns().getStartPriceRowNumber() != null && !sellerRequest.getRules_for_xlsx_columns().getStartPriceRowNumber().isEmpty()
-                        ? Integer.parseInt(sellerRequest.getRules_for_xlsx_columns().getStartPriceRowNumber())
-                        : 0);
-
-        rulesForXlsx.setColumnBrand(
-                sellerRequest.getRules_for_xlsx_columns().getBrandColNumber() != null && !sellerRequest.getRules_for_xlsx_columns().getBrandColNumber().isEmpty()
-                        ? Integer.parseInt(sellerRequest.getRules_for_xlsx_columns().getBrandColNumber())
-                        : 0);
-
-        rulesForXlsx.setColumnArticle(
-                sellerRequest.getRules_for_xlsx_columns().getArticleColNumber() != null && !sellerRequest.getRules_for_xlsx_columns().getArticleColNumber().isEmpty()
-                        ? Integer.parseInt(sellerRequest.getRules_for_xlsx_columns().getArticleColNumber())
-                        : 0);
-
-        rulesForXlsx.setColumnProductCategory(
-                sellerRequest.getRules_for_xlsx_columns().getProductCategoryColNumber() != null && !sellerRequest.getRules_for_xlsx_columns().getProductCategoryColNumber().isEmpty()
-                        ? Integer.parseInt(sellerRequest.getRules_for_xlsx_columns().getProductCategoryColNumber())
-                        : 0);
-
-        rulesForXlsx.setColumnPrice(
-                sellerRequest.getRules_for_xlsx_columns().getPriceColNumber() != null && !sellerRequest.getRules_for_xlsx_columns().getPriceColNumber().isEmpty()
-                        ? Integer.parseInt(sellerRequest.getRules_for_xlsx_columns().getPriceColNumber())
-                        : 0);
-
-        rulesForXlsx.setColumnOnStock(
-                sellerRequest.getRules_for_xlsx_columns().getOnStockColNumber() != null && !sellerRequest.getRules_for_xlsx_columns().getOnStockColNumber().isEmpty()
-                        ? Integer.parseInt(sellerRequest.getRules_for_xlsx_columns().getOnStockColNumber())
-                        : 0);
-
-        rulesForXlsx.setColumnTnved(
-                sellerRequest.getRules_for_xlsx_columns().getTnvedColNumber() != null && !sellerRequest.getRules_for_xlsx_columns().getTnvedColNumber().isEmpty()
-                        ? Integer.parseInt(sellerRequest.getRules_for_xlsx_columns().getTnvedColNumber())
-                        : 0);
-
-        rulesForXlsx.setColumnBarcode(
-                sellerRequest.getRules_for_xlsx_columns().getBarcodeColNumber() != null && !sellerRequest.getRules_for_xlsx_columns().getBarcodeColNumber().isEmpty()
-                        ? Integer.parseInt(sellerRequest.getRules_for_xlsx_columns().getBarcodeColNumber())
-                        : 0);
-
-        rulesForXlsx.setColumnPriceOnStockOwn(
-                sellerRequest.getRules_for_xlsx_columns().getOwnPriceColNumber() != null && !sellerRequest.getRules_for_xlsx_columns().getOwnPriceColNumber().isEmpty()
-                        ? Integer.parseInt(sellerRequest.getRules_for_xlsx_columns().getOwnPriceColNumber())
-                        : 0);
-
-        rulesForXlsx.setColumnOnStockOwn(
-                sellerRequest.getRules_for_xlsx_columns().getOwnOnStockColNumber() != null && !sellerRequest.getRules_for_xlsx_columns().getOwnOnStockColNumber().isEmpty()
-                        ? Integer.parseInt(sellerRequest.getRules_for_xlsx_columns().getOwnOnStockColNumber())
-                        : 0);
-
-        rulesForXlsx.setColumnFreeOnStock(
-                sellerRequest.getRules_for_xlsx_columns().getOwnFreeOnStockColNumber() != null && !sellerRequest.getRules_for_xlsx_columns().getOwnFreeOnStockColNumber().isEmpty()
-                        ? Integer.parseInt(sellerRequest.getRules_for_xlsx_columns().getOwnFreeOnStockColNumber())
-                        : 0);
-
-        rulesForXlsx.setColumnReservedOnStockOwn(
-                sellerRequest.getRules_for_xlsx_columns().getOwnReservedOnStockColNumber() != null && !sellerRequest.getRules_for_xlsx_columns().getOwnReservedOnStockColNumber().isEmpty()
-                        ? Integer.parseInt(sellerRequest.getRules_for_xlsx_columns().getOwnReservedOnStockColNumber())
-                        : 0);
-
-        rulesForXlsx.setColumnPriceForSiteOwn(
-                sellerRequest.getRules_for_xlsx_columns().getOwnPriceForSiteColNumber() != null && !sellerRequest.getRules_for_xlsx_columns().getOwnPriceForSiteColNumber().isEmpty()
-                        ? Integer.parseInt(sellerRequest.getRules_for_xlsx_columns().getOwnPriceForSiteColNumber())
-                        : 0);
-
-        rulesForXlsx.setColumnProductName(
-                sellerRequest.getRules_for_xlsx_columns().getProductNameColNumber() != null && !sellerRequest.getRules_for_xlsx_columns().getProductNameColNumber().isEmpty()
-                        ? Integer.parseInt(sellerRequest.getRules_for_xlsx_columns().getProductNameColNumber())
-                        : 0);
-
-
-
-
-        //        готовим данные для парсинга значений шапки прайса.
+//        готовим данные для парсинга значений шапки прайса.
         XlsxHeaderValue xlsxHeaderValue = new XlsxHeaderValue();
         String fileToRead = sellerRequest.getSellerDetails().getPathToPrice();
-        System.out.println("fileToRead = " + fileToRead);
         Integer headerStringNumber = rulesForXlsx.getHeaderStringNumber();
-        System.out.println("headerStringNumber = " + headerStringNumber);
-//        вызываем метод парсинга
+//        вызываем метод парсинга значений заголовков таблицы прайса
         XlsxParse.parseXlsxHeader(fileToRead, headerStringNumber, rulesForXlsx, xlsxHeaderValue);
-        xlsxHeaderValueRepo.save(xlsxHeaderValue);
 
+        xlsxHeaderValueRepo.save(xlsxHeaderValue);
 
 
         log.info("xlsxHeaderValue: " + xlsxHeaderValue);
 //        log.info("xlsxHeaderValueRepo.findById(1): " + xlsxHeaderValueRepo.findById(1));
-        System.out.println("xlsxHeaderValue = " + xlsxHeaderValue);
+//        System.out.println("xlsxHeaderValue = " + xlsxHeaderValue);
 //        System.out.println("xlsxHeaderValueRepo.findById(1) = " + xlsxHeaderValueRepo.findById(1));
 
-
+//      заполняем значения
         rulesForXlsx.setHeaderValues(xlsxHeaderValue);
-
         rulesForXlsxRepo.save(rulesForXlsx);
 
 

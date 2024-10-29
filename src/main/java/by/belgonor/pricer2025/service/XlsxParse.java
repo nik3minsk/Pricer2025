@@ -41,64 +41,58 @@ public class XlsxParse {
             }
 //            записываем значения полей шапки в объект headerValues
 
-            if (rulesForXlsxHeaders.getColumnBrand() - 1 > 0) {
+            if (rulesForXlsxHeaders.getColumnBrand() - 1 >= 0) {
                 headerValues.setColumnBrand(FindXlsxCellsFormat.cellOfString(row, rulesForXlsxHeaders.getColumnBrand() - 1).toString());
-                System.out.println("1 headerValues.getColumnBrand() = " + headerValues.getColumnBrand());
             }
 
-            if (rulesForXlsxHeaders.getColumnArticle() - 1 > 0) {
+            System.out.println("по ячейке = " + row.getCell(0).getStringCellValue());
+
+            if (rulesForXlsxHeaders.getColumnArticle() - 1 >= 0) {
                 headerValues.setColumnArticle(FindXlsxCellsFormat.cellOfString(row, rulesForXlsxHeaders.getColumnArticle() - 1).toString());
-                System.out.println("2 headerValues.getColumnArticle() = " + headerValues.getColumnArticle());
             }
 
-            if (rulesForXlsxHeaders.getColumnProductCategory() - 1 > 0) {
+            if (rulesForXlsxHeaders.getColumnProductCategory() - 1 >= 0) {
                 headerValues.setColumnProductCategory(FindXlsxCellsFormat.cellOfString(row, rulesForXlsxHeaders.getColumnProductCategory() - 1).toString());
-                System.out.println("3 headerValues.getColumnProductCategory() = " + headerValues.getColumnProductCategory());
             }
 
-            if (rulesForXlsxHeaders.getColumnPrice() - 1 > 0) {
+            if (rulesForXlsxHeaders.getColumnPrice() - 1 >= 0) {
                 headerValues.setColumnPrice(FindXlsxCellsFormat.cellOfString(row, rulesForXlsxHeaders.getColumnPrice() - 1).toString());
-                System.out.println("4 headerValues.getColumnPrice() = " + headerValues.getColumnPrice());
             }
 
-            if (rulesForXlsxHeaders.getColumnOnStock() - 1 > 0) {
+            if (rulesForXlsxHeaders.getColumnOnStock() - 1 >= 0) {
                 headerValues.setColumnOnStock(FindXlsxCellsFormat.cellOfString(row, rulesForXlsxHeaders.getColumnOnStock() - 1).toString());
-                System.out.println("5 headerValues.getColumnOnStock() = " + headerValues.getColumnOnStock());
             }
 
-            if (rulesForXlsxHeaders.getColumnTnved() - 1 > 0) {
+            if (rulesForXlsxHeaders.getColumnTnved() - 1 >= 0) {
                 headerValues.setColumnTnved(FindXlsxCellsFormat.cellOfString(row, rulesForXlsxHeaders.getColumnTnved() - 1).toString());
-                System.out.println("6 headerValues.getColumnTnved() = " + headerValues.getColumnTnved());
             }
 
-            if (rulesForXlsxHeaders.getColumnBarcode() - 1 > 0) {
+            if (rulesForXlsxHeaders.getColumnBarcode() - 1 >= 0) {
                 headerValues.setColumnBarcode(FindXlsxCellsFormat.cellOfString(row, rulesForXlsxHeaders.getColumnBarcode() - 1).toString());
-                System.out.println("7 headerValues.getColumnBarcode() = " + headerValues.getColumnBarcode());
             }
 
-            if (rulesForXlsxHeaders.getColumnOnStockOwn() - 1 > 0) {
+            if (rulesForXlsxHeaders.getColumnPriceOnStockOwn() - 1 >= 0) {
+                headerValues.setColumnPriceOnStockOwn(FindXlsxCellsFormat.cellOfString(row, rulesForXlsxHeaders.getColumnPriceOnStockOwn() - 1).toString());
+            }
+
+            if (rulesForXlsxHeaders.getColumnOnStockOwn() - 1 >= 0) {
                 headerValues.setColumnOnStockOwn(FindXlsxCellsFormat.cellOfString(row, rulesForXlsxHeaders.getColumnOnStockOwn() - 1).toString());
-                System.out.println("8 headerValues.getColumnOnStockOwn() = " + headerValues.getColumnOnStockOwn());
             }
 
-            if (rulesForXlsxHeaders.getColumnReservedOnStockOwn() - 1 > 0) {
+            if (rulesForXlsxHeaders.getColumnReservedOnStockOwn() - 1 >= 0) {
                 headerValues.setColumnReservedOnStockOwn(FindXlsxCellsFormat.cellOfString(row, rulesForXlsxHeaders.getColumnReservedOnStockOwn() - 1).toString());
-                System.out.println("9 headerValues.getColumnReservedOnStockOwn() = " + headerValues.getColumnReservedOnStockOwn());
             }
 
-            if (rulesForXlsxHeaders.getColumnFreeOnStock() - 1 > 0) {
+            if (rulesForXlsxHeaders.getColumnFreeOnStock() - 1 >= 0) {
                 headerValues.setColumnFreeOnStock(FindXlsxCellsFormat.cellOfString(row, rulesForXlsxHeaders.getColumnFreeOnStock() - 1).toString());
-                System.out.println("10 headerValues.getColumnFreeOnStock() = " + headerValues.getColumnFreeOnStock());
             }
 
-            if (rulesForXlsxHeaders.getColumnPriceForSiteOwn() - 1 > 0) {
+            if (rulesForXlsxHeaders.getColumnPriceForSiteOwn() - 1 >= 0) {
                 headerValues.setColumnPriceForSiteOwn(FindXlsxCellsFormat.cellOfString(row, rulesForXlsxHeaders.getColumnPriceForSiteOwn() - 1).toString());
-                System.out.println("11 headerValues.getColumnPriceForSiteOwn() = " + headerValues.getColumnPriceForSiteOwn());
             }
 
-            if (rulesForXlsxHeaders.getColumnProductName() - 1 > 0) {
+            if (rulesForXlsxHeaders.getColumnProductName() - 1 >= 0) {
                 headerValues.setColumnProductName(FindXlsxCellsFormat.cellOfString(row, rulesForXlsxHeaders.getColumnProductName() - 1).toString());
-                System.out.println("12 headerValues.getColumnProductName() = " + headerValues.getColumnProductName());
             }
 //            System.out.println("headerValues = " + headerValues);
         }
