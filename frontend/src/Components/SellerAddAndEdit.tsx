@@ -17,7 +17,7 @@ interface PriceAddAndEditProps {
     setResponseType: (type: string) => void;
 }
 
-const SellerAddAndEdit: React.FC<PriceAddAndEditProps> = ({ isGeneralPrice = false, priceNumber, opened, close, setServerResponse, setResponseType  }) => {
+const SellerAddAndEdit: React.FC<PriceAddAndEditProps> = ({ isGeneralPrice, priceNumber, opened, close, setServerResponse, setResponseType  }) => {
     const [priceName, setPriceName] = useState('');
     const [pathToPrice, setPathToPrice] = useState('');
     const [currencyCode, setCurrencyCode] = useState<number | string>('');
@@ -79,9 +79,10 @@ const SellerAddAndEdit: React.FC<PriceAddAndEditProps> = ({ isGeneralPrice = fal
         }
 
         const data = {
-            isGeneralPrice,
+            // isGeneralPrice,
             priceNumber,
             sellerDetails: {
+                isGeneralPrice,
                 priceName,
                 pathToPrice,
                 currencyCode,
@@ -126,11 +127,6 @@ const SellerAddAndEdit: React.FC<PriceAddAndEditProps> = ({ isGeneralPrice = fal
             setServerResponse('Ошибка при сохранении данных');
             setResponseType('error');
         }
-
-
-
-
-
 
     };
 

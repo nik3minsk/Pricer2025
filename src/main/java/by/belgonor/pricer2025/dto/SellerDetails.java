@@ -15,12 +15,13 @@ public class SellerDetails {
     private String currencyBankCoeff;
     private String coeffDeliveryCost;
     private String minOrderSum;
+    private String isGeneralPrice;
 
 
     public SellerDetails() {
     }
 
-    public SellerDetails(String priceName, String pathToPrice, String currencyCode, String vatRate, String currencyBankCoeff, String coeffDeliveryCost, String minOrderSum) {
+    public SellerDetails(String priceName, String pathToPrice, String currencyCode, String vatRate, String currencyBankCoeff, String coeffDeliveryCost, String minOrderSum, String isGeneralPrice) {
         this.priceName = priceName;
         this.pathToPrice = pathToPrice;
         this.currencyCode = currencyCode;
@@ -28,6 +29,7 @@ public class SellerDetails {
         this.currencyBankCoeff = currencyBankCoeff;
         this.coeffDeliveryCost = coeffDeliveryCost;
         this.minOrderSum = minOrderSum;
+        this.isGeneralPrice = isGeneralPrice;
     }
 
     @Override
@@ -40,6 +42,7 @@ public class SellerDetails {
                 ", currencyBankCoeff='" + currencyBankCoeff + '\'' +
                 ", coeffDeliveryCost='" + coeffDeliveryCost + '\'' +
                 ", minOrderSum='" + minOrderSum + '\'' +
+                ", isGeneralPrice='" + isGeneralPrice + '\'' +
                 '}';
     }
 }

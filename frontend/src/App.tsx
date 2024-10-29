@@ -22,11 +22,11 @@ function App() {
                     {/*    {params => <Header {...params}/>}*/}
                     {/*</Route>*/}
                     <Route path="/addprice">
-                        {params => <AddPrice {...params}/>}
+                        {/*{params => <AddPrice {...params}/>}*/}
                     </Route>
                     <Route path="/addseller">
                         {/*{params => <AddSeller {...params}/>}*/}
-                        {params => <AddSeller {...params}/>}
+                        {/*{params => <AddSeller {...params}/>}*/}
                     </Route>
                     <Route path="/AuthorisationPage">
                         {params => <AuthorisationPage {...params}/>}

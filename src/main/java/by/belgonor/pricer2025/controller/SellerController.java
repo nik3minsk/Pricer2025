@@ -4,6 +4,7 @@ import by.belgonor.pricer2025.dto.SellerDTO;
 import by.belgonor.pricer2025.dto.SellerRequest;
 import by.belgonor.pricer2025.entity.*;
 import by.belgonor.pricer2025.repository.*;
+import by.belgonor.pricer2025.service.XlsxParse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -79,27 +80,9 @@ public class SellerController {
 //        сохраняем бизнес-правила для нового поставщика
         rulesForBusinessRepo.save(rulesForBusiness);
 
-//        Парсинг только значений шапки прайса.
 
-
-//        ВРЕМЕННОЕ!!!!  задание значения ссылки на Заполненные ЗНАЧЕНИЯ ШАПКИ
-        XlsxHeaderValue xlsxHeaderValue = new XlsxHeaderValue();
-        Integer numberForXlsxHeader = 1;
-        Optional<XlsxHeaderValue> optionalXlsxHeaderValue = xlsxHeaderValueRepo.findById(numberForXlsxHeader);
-        if (optionalXlsxHeaderValue.isPresent()) {
-            xlsxHeaderValue = optionalXlsxHeaderValue.get();
-        } else {
-            log.warn("XlsxHeaderValue with id 1 not found");
-        }
-
-        log.info("xlsxHeaderValue: " + xlsxHeaderValue);
-        log.info("xlsxHeaderValueRepo.findById(1): " + xlsxHeaderValueRepo.findById(1));
-        System.out.println("xlsxHeaderValue = " + xlsxHeaderValue);
-        System.out.println("xlsxHeaderValueRepo.findById(1) = " + xlsxHeaderValueRepo.findById(1));
-
-//        сохраняем поля с номерами столбцов для парсинга
+        //        сохраняем поля с номерами столбцов для парсинга
         RulesForXlsx rulesForXlsx = new RulesForXlsx();
-        rulesForXlsx.setHeaderValues(xlsxHeaderValue);
 
         rulesForXlsx.setHeaderStringNumber(
                 sellerRequest.getRules_for_xlsx_columns().getHeaderRowNumber() != null && !sellerRequest.getRules_for_xlsx_columns().getHeaderRowNumber().isEmpty()
@@ -161,6 +144,11 @@ public class SellerController {
                         ? Integer.parseInt(sellerRequest.getRules_for_xlsx_columns().getOwnFreeOnStockColNumber())
                         : 0);
 
+        rulesForXlsx.setColumnReservedOnStockOwn(
+                sellerRequest.getRules_for_xlsx_columns().getOwnReservedOnStockColNumber() != null && !sellerRequest.getRules_for_xlsx_columns().getOwnReservedOnStockColNumber().isEmpty()
+                        ? Integer.parseInt(sellerRequest.getRules_for_xlsx_columns().getOwnReservedOnStockColNumber())
+                        : 0);
+
         rulesForXlsx.setColumnPriceForSiteOwn(
                 sellerRequest.getRules_for_xlsx_columns().getOwnPriceForSiteColNumber() != null && !sellerRequest.getRules_for_xlsx_columns().getOwnPriceForSiteColNumber().isEmpty()
                         ? Integer.parseInt(sellerRequest.getRules_for_xlsx_columns().getOwnPriceForSiteColNumber())
@@ -170,6 +158,30 @@ public class SellerController {
                 sellerRequest.getRules_for_xlsx_columns().getProductNameColNumber() != null && !sellerRequest.getRules_for_xlsx_columns().getProductNameColNumber().isEmpty()
                         ? Integer.parseInt(sellerRequest.getRules_for_xlsx_columns().getProductNameColNumber())
                         : 0);
+
+
+
+
+        //        готовим данные для парсинга значений шапки прайса.
+        XlsxHeaderValue xlsxHeaderValue = new XlsxHeaderValue();
+        String fileToRead = sellerRequest.getSellerDetails().getPathToPrice();
+        System.out.println("fileToRead = " + fileToRead);
+        Integer headerStringNumber = rulesForXlsx.getHeaderStringNumber();
+        System.out.println("headerStringNumber = " + headerStringNumber);
+//        вызываем метод парсинга
+        XlsxParse.parseXlsxHeader(fileToRead, headerStringNumber, rulesForXlsx, xlsxHeaderValue);
+        xlsxHeaderValueRepo.save(xlsxHeaderValue);
+
+
+
+        log.info("xlsxHeaderValue: " + xlsxHeaderValue);
+//        log.info("xlsxHeaderValueRepo.findById(1): " + xlsxHeaderValueRepo.findById(1));
+        System.out.println("xlsxHeaderValue = " + xlsxHeaderValue);
+//        System.out.println("xlsxHeaderValueRepo.findById(1) = " + xlsxHeaderValueRepo.findById(1));
+
+
+        rulesForXlsx.setHeaderValues(xlsxHeaderValue);
+
         rulesForXlsxRepo.save(rulesForXlsx);
 
 
@@ -180,6 +192,7 @@ public class SellerController {
         seller.setPathToPrice(sellerRequest.getSellerDetails().getPathToPrice());
         seller.setEconomicRules(rulesForBusiness);
         seller.setXlsPriceRules(rulesForXlsx);
+        seller.setIsGeneralPrice(Boolean.valueOf(sellerRequest.getSellerDetails().getIsGeneralPrice()));
         sellerRepo.save(seller);
 
 //        return ResponseEntity.ok("Price added successfully!!!   " + sellerRequest);
@@ -191,6 +204,7 @@ public class SellerController {
         return ResponseEntity.ok("Price added successfully!!!   " + sellerRequest);
     }
 
+//          #######################################################
 
     @DeleteMapping("/api/sellers/{id}")
     public ResponseEntity<String> deleteSeller(@PathVariable Integer id) {

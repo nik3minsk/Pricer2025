@@ -1,5 +1,8 @@
+// Понял, давайте сделаем кнопку видимой, но недоступной для нажатия, если уже существует прайс с isGeneralPrice равным true. Для этого можно использовать свойство disabled и добавить стили, чтобы кнопка выглядела как обычно, но была неактивной.
+//
+//     Вот обновленный код:
 
-import React, { useState, useEffect } from "react";
+    import React, { useState, useEffect } from "react";
 import '@mantine/core/styles.css';
 import '@mantine/dates/styles.css';
 import '@mantine/dropzone/styles.css';
@@ -17,6 +20,7 @@ const HomePage = (): React.JSX.Element => {
     const [responseType, setResponseType] = useState('');
     const [sellers, setSellers] = useState<SellerDTO[]>([]);
     const [selectedSellerId, setSelectedSellerId] = useState<number | null>(null);
+    const [hasGeneralPrice, setHasGeneralPrice] = useState(false);
 
     interface SellerDTO {
         id: number;
@@ -29,6 +33,7 @@ const HomePage = (): React.JSX.Element => {
         try {
             const response = await axios.get(`${BACK_URL}/api/sellers`);
             setSellers(response.data);
+            setHasGeneralPrice(response.data.some((seller: SellerDTO) => seller.isGeneralPrice));
             console.log(response);
         } catch (error) {
             console.error('Ошибка при получении данных о продавцах:', error);
@@ -38,8 +43,6 @@ const HomePage = (): React.JSX.Element => {
     useEffect(() => {
         fetchSellers();
     }, []);
-
-
 
     useEffect(() => {
         if (serverResponse) {
@@ -75,10 +78,9 @@ const HomePage = (): React.JSX.Element => {
     return (
         <Stack align="center" justify="center" style={{ minHeight: '100vh' }}>
             <Group align="start" style={{ width: '100%', border: '2px solid #ccc', padding: '20px', borderRadius: '10px' }}>
-                <div style={{flex: 1}}>
+                <div style={{ flex: 1 }}>
                     <h2>Список продавцов</h2>
-                    <h2>Список продавцов</h2>
-                    <div style={{maxHeight: '600px', overflowY: 'auto', paddingRight: '10px', minHeight: '300px'}}>
+                    <div style={{ maxHeight: '600px', overflowY: 'auto', paddingRight: '10px', minHeight: '300px' }}>
                         {sellers.slice(0, 10).map(seller => (
                             <Checkbox
                                 key={seller.id}
@@ -87,23 +89,31 @@ const HomePage = (): React.JSX.Element => {
                                 onChange={() => handleCheckboxChange(seller.id)}
                                 style={{
                                     marginBottom: '10px',
-                                    // backgroundColor: seller.isGeneralPrice ? '#ffffff' : 'transparent', // Light blue background for seller with id=1
-                                    color: seller.isGeneralPrice  ? 'green' : 'inherit' // Green text for seller with id=1
-                                    // backgroundColor: seller.isGeneralPrice ? '#d0eaff' : 'transparent' // Highlight seller with id=1
+                                    color: seller.isGeneralPrice ? 'green' : 'inherit'
                                 }}
                             />
                         ))}
                     </div>
-
                 </div>
-                <div style={{flexShrink: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center'}}>
-                    <Button onClick={openGeneralPrice} fullWidth style={{marginBottom: '10px'}}>Добавить собственный
-                        прайс</Button>
-                    <Button onClick={openSupplierPrice} fullWidth style={{marginBottom: '10px'}}>Добавить
-                        поставщика</Button>
+                <div style={{
+                    flex: 1,
+                    justifyContent: 'space-between',
+                    height: '100%'
+                }}>
+                    <Button
+                        onClick={openGeneralPrice}
+                        fullWidth
+                        style={{ marginBottom: '10px', cursor: hasGeneralPrice ? 'not-allowed' : 'pointer' }}
+                        disabled={hasGeneralPrice}
+                    >
+                        Добавить собственный прайс
+                    </Button>
+                    <Button onClick={openSupplierPrice} fullWidth style={{ marginBottom: '10px' }}>
+                        Добавить поставщика
+                    </Button>
                     <Button onClick={handleDelete} fullWidth>Удалить прайс</Button>
                     {serverResponse && (
-                        <pre style={{marginTop: '20px', color: 'green'}}>{serverResponse}</pre>
+                        <pre style={{ marginTop: '20px', color: 'green' }}>{serverResponse}</pre>
                     )}
                 </div>
             </Group>
@@ -128,3 +138,5 @@ const HomePage = (): React.JSX.Element => {
 }
 
 export default HomePage;
+
+// Теперь кнопка "Добавить собственный прайс" будет видимой, но неактивной (нельзя нажать), если уже существует прайс с isGeneralPrice равным true. Если у вас есть еще вопросы или нужна дополнительная помощь, дайте знать! blush
