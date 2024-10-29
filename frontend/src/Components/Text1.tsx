@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Button, TextInput, Stack, Text } from "@mantine/core";
 import CurrencySelector from './CurrencySelector';
+import FileSelector from './FileSelector'; // Import the FileSelector component
 import { useParams } from 'react-router-dom';
 
 const BACK_URL: string = import.meta.env.VITE_BACK_URL;
@@ -11,6 +12,7 @@ const Text1 = () => {
     const [value, setValue] = useState('');
     const [priceCurrencyChoice, setPriceCurrencyChoice] = useState<number | null>(null);
     const [generalNumberTest, setGeneralNumberTest] = useState('');
+    const folderPath = "/Users/nik3minsk/IdeaProjects/pricer2025/xlsx"; // Set your folder path here
 
     useEffect(() => {
         const isGeneralPriceBool = isGeneralPrice === 'true';
@@ -28,6 +30,10 @@ const Text1 = () => {
         }
     };
 
+    const handleFileSelect = (file) => {
+        setValue(file); // Set the selected file path to your state
+    };
+
     let localIsGeneralPrice: boolean = isGeneralPrice === 'true';
     localIsGeneralPrice = true;  // Присваиваем новое значение
     let localPriceNumber: number = parseInt(priceNumber, 10);
@@ -38,7 +44,9 @@ const Text1 = () => {
             <TextInput
                 value={value}
                 onChange={(event) => setValue(event.currentTarget.value)}
+                placeholder="Выберите файл для настройки"
             />
+            <FileSelector folderPath={folderPath} onSelectFile={handleFileSelect} /> {/* Add the FileSelector component */}
             <CurrencySelector onCurrencySelect={setPriceCurrencyChoice} />
             <Button onClick={() => {
                 console.log(test());
