@@ -5,6 +5,7 @@ import '@mantine/dropzone/styles.css';
 import { Button, Group, Modal, NumberInput, Stack, TextInput, Title } from "@mantine/core";
 import CurrencySelector from './CurrencySelector';
 import axios from 'axios';
+import FileSelector from "./FileSelector.tsx";
 
 const BACK_URL = import.meta.env.VITE_BACK_URL;
 
@@ -112,7 +113,6 @@ const SellerAddAndEdit: React.FC<PriceAddAndEditProps> = ({ isGeneralPrice, pric
         };
         console.log(data)
         try {
-            // const response = await axios.post(`${BACK_URL}/api/addPrice2`, data, {
             const response = await axios.post(`${BACK_URL}/api/addSeller`, data, {
                 headers: {
                     'Content-Type': 'application/json',
@@ -127,11 +127,15 @@ const SellerAddAndEdit: React.FC<PriceAddAndEditProps> = ({ isGeneralPrice, pric
             setServerResponse('Ошибка при сохранении данных');
             setResponseType('error');
         }
+    };
 
+    const folderPath = "/Users/nik3minsk/IdeaProjects/pricer2025/xlsx"; // Set your folder path here
+    const handleFileSelect = (file) => {
+        // setValue(file); // Set the selected file path to your state
     };
 
     return (
-        <Modal size={'auto'} opened={opened} onClose={close} title="Authentication" centered className="modal-centered">
+        <Modal size={'auto'} opened={opened} onClose={close} title="Authentication" centered className="modalCentered">
             <Stack>
                 <Group grow>
                     <Title ta={"center"} w={"33%"} order={4}>Сведения о прайсе продавца</Title>
@@ -141,7 +145,9 @@ const SellerAddAndEdit: React.FC<PriceAddAndEditProps> = ({ isGeneralPrice, pric
                 <Group align={'start'} grow>
                     <Stack>
                         <TextInput value={priceName} onChange={(event) => setPriceName(event.currentTarget.value)} placeholder="* Название прайса" required />
-                        <TextInput value={pathToPrice} onChange={(event) => setPathToPrice(event.currentTarget.value)} placeholder="* Ссылка на прайс" required />
+                        {/*<TextInput value={pathToPrice} onChange={(event) => setPathToPrice(event.currentTarget.value)} placeholder="* Ссылка на прайс" required />*/}
+                        <FileSelector folderPath={folderPath} onSelectFile={handleFileSelect} /> {/* Add the FileSelector component */}
+
                         <CurrencySelector onCurrencySelect={setCurrencyCode} />
                         <NumberInput value={vatRate} onChange={setVatRate} placeholder="* Учтенный % НДС" required />
                         <NumberInput value={currencyBankCoeff} onChange={setCurrencyBankCoeff} placeholder="Коэфициент банковских потерь" />

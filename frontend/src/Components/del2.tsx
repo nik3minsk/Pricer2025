@@ -2,11 +2,11 @@ import React, {useState, useEffect} from "react";
 import '@mantine/core/styles.css';
 import '@mantine/dates/styles.css';
 import '@mantine/dropzone/styles.css';
+import './index.css'; // Импортируем наш CSS файл
 import {Button, Group, Stack, Checkbox, Modal, Box} from "@mantine/core";
 import {useDisclosure} from "@mantine/hooks";
 import SellerAddAndEdit from './SellerAddAndEdit.tsx';
 import axios from "axios";
-import {eventCenter} from "recharts/types/util/Events";
 
 const BACK_URL = import.meta.env.VITE_BACK_URL;
 
@@ -91,46 +91,37 @@ const HomePage = (): React.JSX.Element => {
     return (
         <Stack align="center" justify="center" style={{minHeight: '100vh'}}>
             <Group align="start"
-                   style={{
-                       width: '100%',
-                       border: '2px solid #ccc',
-                       padding: '20px',
-                       borderRadius: '10px',
-                       position: 'relative'
-                   }}>
+                   style={{width: '100%', border: '2px solid #ccc', padding: '20px', borderRadius: '10px'}}>
                 <div style={{flex: 1}}>
-                    <h2>Список продавцов</h2>
-
-                    <div style={{
-                        maxHeight: '600px',
-                        overflowY: 'auto',
-                        paddingRight: '10px',
-                        minHeight: '300px',
-                        marginTop: '30px'
-                    }}>
+                    <div><h2>Список продавцов</h2></div>
+                    <div style={{maxHeight: '600px', overflowY: 'auto', paddingRight: '10px', minHeight: '300px'}}>
                         {sellers.slice(0, 10).map(seller => (
                             <Checkbox
                                 key={seller.id}
-                                label={
-                                    seller.isGeneralPrice
-                                        ? `Наш прайс: ${seller.priceName} - ${seller.pathToPrice}`
-                                        : `Поставщик: ${seller.priceName} - ${seller.pathToPrice}`
-                                }
+                                label={`${seller.priceName} - ${seller.pathToPrice}`}
                                 checked={selectedSellerId === seller.id}
                                 onChange={() => handleCheckboxChange(seller.id)}
                                 style={{marginBottom: '10px', color: seller.isGeneralPrice ? 'green' : 'inherit'}}
                             />
                         ))}
                     </div>
-
-
+                    <Box style={{marginTop: '20px', width: '100%', overflow: 'hidden'}}>
+                        {serverResponse && (
+                            <pre style={{
+                                color: 'green',
+                                whiteSpace: 'pre-wrap',
+                                wordWrap: 'break-word'
+                            }}>{serverResponse}</pre>
+                        )}
+                    </Box>
                 </div>
                 <div style={{
                     flex: 1,
                     justifyContent: 'space-between',
                     height: '100%',
                     width: '300px',
-                    overflow: 'hidden'
+                    overflow: 'hidden',
+                    position: 'relative'
                 }}>
                     <Button
                         onClick={openGeneralPrice}
@@ -148,40 +139,28 @@ const HomePage = (): React.JSX.Element => {
                     >
                         Добавить поставщика
                     </Button>
-                    <Button onClick={handleDelete} fullWidth style={{marginBottom: '35px'}}>Удалить прайс</Button>
+                    <Button onClick={handleDelete} fullWidth style={{marginBottom: '10px'}}>Удалить прайс</Button>
                     <Button
                         onClick={handleComparePrices}
                         fullWidth
-                        style={{marginBottom: '35px', backgroundColor: '#00FF00', color: '#000'}}
+                        style={{marginBottom: '10px', backgroundColor: '#00FF00', color: '#000'}}
                     >
                         Сравнить цены
                     </Button>
-
-
                     <Button
                         onClick={openHelp}
                         fullWidth
-                        // style={{
-                        //     marginBottom: '15px',
-                        //     backgroundColor: '#FF9900',
-                        //     color: '#000',
-                        //     width: '100%',
-                        // }}
-                        className="action-button help-button"
+                        style={{
+                            position: 'absolute',
+                            bottom: '20px',
+                            right: '20px',
+                            backgroundColor: '#FF9900',
+                            color: '#000',
+                            width: '100%' // Задаем ширину кнопки такой же, как у остальных
+                        }}
                     >
                         Help
                     </Button>
-
-
-                    <Box style={{marginTop: '20px', width: '100%', overflow: 'hidden'}}>
-                        {serverResponse && (
-                            <pre style={{
-                                color: 'green',
-                                whiteSpace: 'pre-wrap',
-                                wordWrap: 'break-word'
-                            }}>{serverResponse}</pre>
-                        )}
-                    </Box>
                 </div>
             </Group>
             <SellerAddAndEdit
@@ -201,8 +180,10 @@ const HomePage = (): React.JSX.Element => {
                 setResponseType={setResponseType}
             />
             <Modal opened={openedHelp} onClose={closeHelp} title="Help" centered size="lg" className="modalCentered">
-                <p>Эта программа позволяет управлять списком продавцов, добавлять и удалять прайсы, а также сравнивать
-                    цены между различными поставщиками. Используйте кнопки для выполнения соответствующих действий.</p>
+                <p>
+                    Эта программа позволяет управлять списком продавцов, добавлять и удалять прайсы, а также сравнивать
+                    цены между различными поставщиками. Используйте кнопки для выполнения соответствующих действий.
+                </p>
             </Modal>
         </Stack>
     );
