@@ -6,7 +6,7 @@ import {Button, Group, Stack, Checkbox, Modal, Box} from "@mantine/core";
 import {useDisclosure} from "@mantine/hooks";
 import SellerAddAndEdit from './SellerAddAndEdit.tsx';
 import axios from "axios";
-import {eventCenter} from "recharts/types/util/Events";
+// import {eventCenter} from "recharts/types/util/Events";
 
 const BACK_URL = import.meta.env.VITE_BACK_URL;
 
@@ -48,7 +48,7 @@ const HomePage = (): React.JSX.Element => {
                 setServerResponse('');
                 setResponseType('');
                 fetchSellers();
-            }, 700);
+            }, 800);
             return () => clearTimeout(timer);
         }
     }, [serverResponse]);
@@ -75,6 +75,7 @@ const HomePage = (): React.JSX.Element => {
 
     const handleComparePrices = async () => {
         const sellerData = sellers.map(seller => ({
+            id: seller.id,
             priceName: seller.priceName,
             isGeneralPrice: seller.isGeneralPrice
         }));
@@ -99,7 +100,7 @@ const HomePage = (): React.JSX.Element => {
                        position: 'relative'
                    }}>
                 <div style={{flex: 1}}>
-                    <h2>Список продавцов</h2>
+                    <h2>Список поставщиков</h2>
 
                     <div style={{
                         maxHeight: '600px',
@@ -113,8 +114,8 @@ const HomePage = (): React.JSX.Element => {
                                 key={seller.id}
                                 label={
                                     seller.isGeneralPrice
-                                        ? `Наш прайс: ${seller.priceName} - ${seller.pathToPrice}`
-                                        : `Поставщик: ${seller.priceName} - ${seller.pathToPrice}`
+                                        ? `Наш прайс: ${seller.priceName} (${seller.pathToPrice})`
+                                        : `Поставщик: ${seller.priceName} (${seller.pathToPrice})`
                                 }
                                 checked={selectedSellerId === seller.id}
                                 onChange={() => handleCheckboxChange(seller.id)}
@@ -161,13 +162,13 @@ const HomePage = (): React.JSX.Element => {
                     <Button
                         onClick={openHelp}
                         fullWidth
-                        // style={{
-                        //     marginBottom: '15px',
-                        //     backgroundColor: '#FF9900',
-                        //     color: '#000',
-                        //     width: '100%',
-                        // }}
-                        className="action-button help-button"
+                        style={{
+                            marginBottom: '15px',
+                            backgroundColor: '#FF9900',
+                            color: '#000',
+                            width: '100%',
+                        }}
+                        // className="action-button help-button"
                     >
                         Help
                     </Button>

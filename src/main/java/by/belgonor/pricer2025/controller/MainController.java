@@ -1,13 +1,9 @@
 package by.belgonor.pricer2025.controller;
-
-
-import by.belgonor.pricer2025.dto.SellerRequest;
 import by.belgonor.pricer2025.entity.*;
 import by.belgonor.pricer2025.repository.CatRepo;
 import by.belgonor.pricer2025.repository.CurrencyNbRepo;
 import by.belgonor.pricer2025.repository.RulesForBusinessRepo;
 import by.belgonor.pricer2025.repository.SellerRepo;
-import by.belgonor.pricer2025.service.SellerService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -18,13 +14,16 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.math.BigDecimal;
+import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 
 @Slf4j
 @RestController
 @CrossOrigin(origins = "http://localhost:5173")
+//@RequestMapping("/api")
 public class MainController {
     @Autowired
     private CurrencyNbRepo currencyNbRepo;
@@ -38,10 +37,10 @@ public class MainController {
     @Autowired
     private RulesForBusinessRepo rulesForBusinessRepo;
 
-    @GetMapping("/api/main")
-    public String mainListener() {
-        return "Hello World!";
-    }
+//    @GetMapping("/api/main")
+//    public String mainListener() {
+//        return "Hello World!";
+//    }
 
     @GetMapping("/api/cat")
     public String giveCatListener() {
@@ -223,6 +222,25 @@ public class MainController {
 ////        System.out.println("sellerRequest = " + sellerRequest);
 //
 //        return ResponseEntity.ok("Price added successfully!!!   " + sellerRequest);
+//    }
+
+//    @PostMapping("/api/files")
+//    public ResponseEntity<List<String>> getFiles(@RequestBody Map<String, String> request) {
+//        String folderPath = request.get("folderPath");
+//        File folder = new File(folderPath);
+//        File[] listOfFiles = folder.listFiles();
+//        List<String> fileNames = new ArrayList<>();
+//
+//        if (listOfFiles != null) {
+//            for (File file : listOfFiles) {
+//                if (file.isFile()) {
+////                    fileNames.add(file.getName());
+//                    fileNames.add(file.getAbsolutePath());
+//                    System.out.println("file = " + file);
+//                }
+//            }
+//        }
+//        return ResponseEntity.ok(fileNames);
 //    }
 
 }

@@ -23,4 +23,6 @@ public class CurrencyNbController {
         return currencyNbRepo.findAll();
 
     }
+
+
 }

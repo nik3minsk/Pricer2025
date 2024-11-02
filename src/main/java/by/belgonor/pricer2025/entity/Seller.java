@@ -42,4 +42,15 @@ public class Seller {
     @Column(name = "is_general_price", nullable = false)
     private Boolean isGeneralPrice = false;
 
+    @Override
+    public String toString() {
+        return "Seller{" +
+                "id=" + id +
+                ", priceName='" + priceName + '\'' +
+                ", pathToPrice='" + pathToPrice + '\'' +
+                ", economicRules=" + economicRules +
+                ", xlsPriceRules=" + xlsPriceRules +
+                ", isGeneralPrice=" + isGeneralPrice +
+                '}';
+    }
 }

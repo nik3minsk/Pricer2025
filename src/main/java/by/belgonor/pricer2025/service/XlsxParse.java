@@ -1,18 +1,60 @@
 package by.belgonor.pricer2025.service;
 
+import by.belgonor.pricer2025.controller.FileController;
 import by.belgonor.pricer2025.entity.RulesForXlsx;
+import by.belgonor.pricer2025.entity.Seller;
 import by.belgonor.pricer2025.entity.XlsxHeaderValue;
+import by.belgonor.pricer2025.repository.RulesForXlsxRepo;
+import by.belgonor.pricer2025.repository.XlsxHeaderValueRepo;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
+import java.util.Optional;
 
-
+@Service
 public class XlsxParse {
 
+    @Autowired
+    private  RulesForXlsxRepo rulesForXlsxRepo;
+
+    @Autowired
+    private XlsxHeaderValueRepo xlsxHeaderValueRepo;
+
+    public String checkFailInHeader(Seller seller) {
+        System.out.println(" \b ===  checkFailInHeader======= \b");
+        String failCollumnsNumbers = "";
+        System.out.println("\bseller = \b" + seller);
+        RulesForXlsx salerXlsxRules = rulesForXlsxRepo.findById(seller.getId()).orElse(null);
+        System.out.println("\bsalerXlsxRules = \b" + salerXlsxRules);
+
+        Optional<XlsxHeaderValue> validHeaderValues = xlsxHeaderValueRepo.findById(salerXlsxRules.getId());
+        System.out.println("\bxlsxHeaderValueRepo.findById(salerXlsxRules.getId()) = \b" + validHeaderValues);
+        System.out.println("\bsalerXlsxRules.getId() = \b" + salerXlsxRules.getId());
+
+
+
+//        RulesForXlsx newRules = rulesForXlsxRepo.findById(seller.getId());
+
+
+        XlsxHeaderValue newHeaderValues = new XlsxHeaderValue();
+        parseXlsxHeader(seller.getPathToPrice(), seller.getXlsPriceRules().getHeaderStringNumber(), salerXlsxRules, newHeaderValues);
+        System.out.println("\bnewHeaderValues = \b" + newHeaderValues);
+
+
+//        XlsxHeaderValue validHeaderValues;
+
+
+
+        return failCollumnsNumbers;
+    }
+//                  ##########   парсинг значений шапки c записью их в объект XlsxHeaderValue headerValues ###################
     public static void parseXlsxHeader(String fileToRead, Integer headerStringNumber, RulesForXlsx rulesForXlsxHeaders, XlsxHeaderValue headerValues){
         Path.of(fileToRead);
         System.out.println("pathOfFile = " + fileToRead);
@@ -97,4 +139,6 @@ public class XlsxParse {
 //            System.out.println("headerValues = " + headerValues);
         }
     }
+
+
 }

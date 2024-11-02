@@ -11,6 +11,9 @@ const FileSelector = ({ folderPath, onSelectFile }) => {
     useEffect(() => {
         const fetchFiles = async () => {
             try {
+                console.log('BACK_URL:', BACK_URL);
+                console.log('folderPath:', folderPath);
+
                 const response = await axios.post(`${BACK_URL}/api/files`, { folderPath });
                 setFiles(response.data);
             } catch (error) {
