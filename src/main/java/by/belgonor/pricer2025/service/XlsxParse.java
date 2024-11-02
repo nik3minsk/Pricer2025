@@ -31,14 +31,20 @@ public class XlsxParse {
         System.out.println(" \b ===  checkFailInHeader======= \b");
         String failCollumnsNumbers = "";
         System.out.println("\bseller = \b" + seller);
-        RulesForXlsx salerXlsxRules = rulesForXlsxRepo.findById(seller.getId()).orElse(null);
+        System.out.println("seller.getXlsPriceRules() = " + seller.getXlsPriceRules());
+
+
+
+        RulesForXlsx salerXlsxRules = rulesForXlsxRepo.findById(seller.getXlsPriceRules().getId()).orElse(null);
+//        RulesForXlsx salerXlsxRules = rulesForXlsxRepo.findById(seller.getId()).orElse(null);
+        System.out.println(" ===================== ");
         System.out.println("\bsalerXlsxRules = \b" + salerXlsxRules);
 
-        Optional<XlsxHeaderValue> validHeaderValues = xlsxHeaderValueRepo.findById(salerXlsxRules.getId());
-        System.out.println("\bxlsxHeaderValueRepo.findById(salerXlsxRules.getId()) = \b" + validHeaderValues);
-        System.out.println("\bsalerXlsxRules.getId() = \b" + salerXlsxRules.getId());
-
-
+        Optional<XlsxHeaderValue> validHeaderValues = xlsxHeaderValueRepo.findById(seller.getXlsPriceRules().getHeaderValues().getId());
+        System.out.println(" ===================== ");
+        System.out.println("validHeaderValues = " + validHeaderValues);
+//        System.out.println("\bxlsxHeaderValueRepo.findById(salerXlsxRules.getId()) = \b" + validHeaderValues);
+//        System.out.println("\bsalerXlsxRules.getId() = \b" + salerXlsxRules.);
 
 //        RulesForXlsx newRules = rulesForXlsxRepo.findById(seller.getId());
 
@@ -47,13 +53,111 @@ public class XlsxParse {
         parseXlsxHeader(seller.getPathToPrice(), seller.getXlsPriceRules().getHeaderStringNumber(), salerXlsxRules, newHeaderValues);
         System.out.println("\bnewHeaderValues = \b" + newHeaderValues);
 
-
-//        XlsxHeaderValue validHeaderValues;
-
-
-
+        // Вызов метода для сравнения полей
+        String result = compareXlsxHeaderValues(newHeaderValues, validHeaderValues.orElse(null));
+        if (!result.isEmpty()) {
+            failCollumnsNumbers = result;
+        }
+//          надо избавиться от лишней переменной
         return failCollumnsNumbers;
     }
+
+
+    public String compareXlsxHeaderValues(XlsxHeaderValue newHeaderValues, XlsxHeaderValue validHeaderValues) {
+        if (validHeaderValues == null) {
+            System.out.println("Valid header values are null.");
+            return "All valid header values are null.";
+        }
+
+        StringBuilder mismatchFields = new StringBuilder();
+
+        if (!equalsOrNull(newHeaderValues.getColumnBrand(), validHeaderValues.getColumnBrand())) {
+            mismatchFields.append("columnBrand ");
+        }
+        if (!equalsOrNull(newHeaderValues.getColumnArticle(), validHeaderValues.getColumnArticle())) {
+            mismatchFields.append("columnArticle ");
+        }
+        if (!equalsOrNull(newHeaderValues.getColumnProductCategory(), validHeaderValues.getColumnProductCategory())) {
+            mismatchFields.append("columnProductCategory ");
+        }
+        if (!equalsOrNull(newHeaderValues.getColumnPrice(), validHeaderValues.getColumnPrice())) {
+            mismatchFields.append("columnPrice ");
+        }
+        if (!equalsOrNull(newHeaderValues.getColumnOnStock(), validHeaderValues.getColumnOnStock())) {
+            mismatchFields.append("columnOnStock ");
+        }
+        if (!equalsOrNull(newHeaderValues.getColumnTnved(), validHeaderValues.getColumnTnved())) {
+            mismatchFields.append("columnTnved ");
+        }
+        if (!equalsOrNull(newHeaderValues.getColumnBarcode(), validHeaderValues.getColumnBarcode())) {
+            mismatchFields.append("columnBarcode ");
+        }
+        if (!equalsOrNull(newHeaderValues.getColumnPriceOnStockOwn(), validHeaderValues.getColumnPriceOnStockOwn())) {
+            mismatchFields.append("columnPriceOnStockOwn ");
+        }
+        if (!equalsOrNull(newHeaderValues.getColumnOnStockOwn(), validHeaderValues.getColumnOnStockOwn())) {
+            mismatchFields.append("columnOnStockOwn ");
+        }
+        if (!equalsOrNull(newHeaderValues.getColumnReservedOnStockOwn(), validHeaderValues.getColumnReservedOnStockOwn())) {
+            mismatchFields.append("columnReservedOnStockOwn ");
+        }
+        if (!equalsOrNull(newHeaderValues.getColumnFreeOnStock(), validHeaderValues.getColumnFreeOnStock())) {
+            mismatchFields.append("columnFreeOnStock ");
+        }
+        if (!equalsOrNull(newHeaderValues.getColumnPriceForSiteOwn(), validHeaderValues.getColumnPriceForSiteOwn())) {
+            mismatchFields.append("columnPriceForSiteOwn ");
+        }
+        if (!equalsOrNull(newHeaderValues.getColumnProductName(), validHeaderValues.getColumnProductName())) {
+            mismatchFields.append("columnProductName ");
+        }
+
+        if (mismatchFields.length() == 0) {
+            System.out.println("Header values match.");
+            return "";
+        } else {
+            System.out.println("Header values do not match. Mismatched fields: " + mismatchFields.toString().trim());
+            return mismatchFields.toString().trim();
+        }
+    }
+
+    private boolean equalsOrNull(String s1, String s2) {
+        return (s1 == null && s2 == null) || (s1 != null && s1.equals(s2));
+    }
+
+
+//    public boolean compareXlsxHeaderValues(XlsxHeaderValue newHeaderValues, XlsxHeaderValue validHeaderValues) {
+//        if (validHeaderValues == null) {
+//            System.out.println("Valid header values are null.");
+//            return false;
+//        }
+//
+//        boolean result = true;
+//
+//        result = result && (newHeaderValues.getColumnBrand() == null ? validHeaderValues.getColumnBrand() == null : newHeaderValues.getColumnBrand().equals(validHeaderValues.getColumnBrand()));
+//        result = result && (newHeaderValues.getColumnArticle() == null ? validHeaderValues.getColumnArticle() == null : newHeaderValues.getColumnArticle().equals(validHeaderValues.getColumnArticle()));
+//        result = result && (newHeaderValues.getColumnProductCategory() == null ? validHeaderValues.getColumnProductCategory() == null : newHeaderValues.getColumnProductCategory().equals(validHeaderValues.getColumnProductCategory()));
+//        result = result && (newHeaderValues.getColumnPrice() == null ? validHeaderValues.getColumnPrice() == null : newHeaderValues.getColumnPrice().equals(validHeaderValues.getColumnPrice()));
+//        result = result && (newHeaderValues.getColumnOnStock() == null ? validHeaderValues.getColumnOnStock() == null : newHeaderValues.getColumnOnStock().equals(validHeaderValues.getColumnOnStock()));
+//        result = result && (newHeaderValues.getColumnTnved() == null ? validHeaderValues.getColumnTnved() == null : newHeaderValues.getColumnTnved().equals(validHeaderValues.getColumnTnved()));
+//        result = result && (newHeaderValues.getColumnBarcode() == null ? validHeaderValues.getColumnBarcode() == null : newHeaderValues.getColumnBarcode().equals(validHeaderValues.getColumnBarcode()));
+//        result = result && (newHeaderValues.getColumnPriceOnStockOwn() == null ? validHeaderValues.getColumnPriceOnStockOwn() == null : newHeaderValues.getColumnPriceOnStockOwn().equals(validHeaderValues.getColumnPriceOnStockOwn()));
+//        result = result && (newHeaderValues.getColumnOnStockOwn() == null ? validHeaderValues.getColumnOnStockOwn() == null : newHeaderValues.getColumnOnStockOwn().equals(validHeaderValues.getColumnOnStockOwn()));
+//        result = result && (newHeaderValues.getColumnReservedOnStockOwn() == null ? validHeaderValues.getColumnReservedOnStockOwn() == null : newHeaderValues.getColumnReservedOnStockOwn().equals(validHeaderValues.getColumnReservedOnStockOwn()));
+//        result = result && (newHeaderValues.getColumnFreeOnStock() == null ? validHeaderValues.getColumnFreeOnStock() == null : newHeaderValues.getColumnFreeOnStock().equals(validHeaderValues.getColumnFreeOnStock()));
+//        result = result && (newHeaderValues.getColumnPriceForSiteOwn() == null ? validHeaderValues.getColumnPriceForSiteOwn() == null : newHeaderValues.getColumnPriceForSiteOwn().equals(validHeaderValues.getColumnPriceForSiteOwn()));
+//        result = result && (newHeaderValues.getColumnProductName() == null ? validHeaderValues.getColumnProductName() == null : newHeaderValues.getColumnProductName().equals(validHeaderValues.getColumnProductName()));
+//
+//        if (result) {
+//            System.out.println("Header values match.");
+//        } else {
+//            System.out.println("Header values do not match.");
+//        }
+//
+//        return result;
+//    }
+
+
+
 //                  ##########   парсинг значений шапки c записью их в объект XlsxHeaderValue headerValues ###################
     public static void parseXlsxHeader(String fileToRead, Integer headerStringNumber, RulesForXlsx rulesForXlsxHeaders, XlsxHeaderValue headerValues){
         Path.of(fileToRead);
