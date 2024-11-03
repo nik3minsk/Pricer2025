@@ -1,6 +1,5 @@
 package by.belgonor.pricer2025.service;
 
-import by.belgonor.pricer2025.controller.FileController;
 import by.belgonor.pricer2025.dto.CurrencyData;
 import by.belgonor.pricer2025.entity.CurrencyNb;
 import by.belgonor.pricer2025.entity.CurrencyRate;
@@ -39,23 +38,9 @@ public class AlfaBankCoursesService {
     private XlsxParse xlsxParse;
 
 
-    public String bigStart(List<Seller> sellers) throws IOException {
-String errorText = "";
+    public void checkNbCourses(List<Seller> sellers) throws IOException {
 //        если нет курсов валют на сегодняшнюю дату, то получаем их в Альфабанке и записываем в БД
-//        if (!isActualCoursesExist()) {setActualCourses();}
-
-//        перебираем поочередно прайсы, которые участвуют в сравнении
-        for (Seller seller : sellers) {
-//            System.out.println("Price Name: " + seller.getPriceName());
-//            System.out.println("Is General Price: " + seller.getIsGeneralPrice());
-            System.out.println("seller = " + seller);
-
-//            проверяем корректность шапки в прайс-листе
-            xlsxParse.checkFailInHeader(seller);
-
-
-        }
-        return errorText;
+        if (!isActualCoursesExist()) {setActualCourses();}
     }
 
     public boolean isActualCoursesExist() {
@@ -68,7 +53,7 @@ String errorText = "";
         if (currencyRates.isEmpty()) {
             isExist = false;
         }
-            return isExist;
+        return isExist;
     }
 
     public void setActualCourses() throws IOException {
@@ -80,11 +65,11 @@ String errorText = "";
         System.out.println("bankAnswer = " + bankAnswer);
 //            // декодируем ответ из банка
         List<CurrencyData> currencyFromNb = decodeBankAnswer(bankAnswer);
-        for (CurrencyNb currencyNbCode: currencyList) {
+        for (CurrencyNb currencyNbCode : currencyList) {
             CurrencyRate toAdd = new CurrencyRate();
             System.out.println("currencyNbCode = " + currencyNbCode);
-            for (CurrencyData alfaAnwer: currencyFromNb) {
-                if (currencyNbCode.getCurrencyCode() == alfaAnwer.getCode()){
+            for (CurrencyData alfaAnwer : currencyFromNb) {
+                if (currencyNbCode.getCurrencyCode() == alfaAnwer.getCode()) {
                     toAdd.setDate(coorseByDate);
                     toAdd.setCurrencyRate((alfaAnwer.getRate()).divide(BigDecimal.valueOf(alfaAnwer.getQuantity())));
                     toAdd.setCurrency(currencyNbCode);
@@ -113,7 +98,7 @@ String errorText = "";
         return currencyDataList;
     }
 
-//          ##############  получение курсов НБ из АльфаБанка   ################
+    //          ##############  получение курсов НБ из АльфаБанка   ################
     public static String getAlfaNB() throws IOException {
 
         OkHttpClient client = new OkHttpClient();

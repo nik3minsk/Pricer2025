@@ -6,6 +6,7 @@ import by.belgonor.pricer2025.repository.SellerRepo;
 import by.belgonor.pricer2025.service.AlfaBankCoursesService;
 import by.belgonor.pricer2025.service.RulesForXlsxService;
 import by.belgonor.pricer2025.service.SellerService;
+import by.belgonor.pricer2025.service.XlsxParse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -35,6 +36,9 @@ public class FileController {
 
     @Autowired
     private SellerService sellerService;
+
+    @Autowired
+    private XlsxParse xlsxParse;
 
     public static class SellerDTO {
         private AlfaBankCourses bank;
@@ -101,21 +105,33 @@ public class FileController {
 //        System.out.println("sellers = " + sellers);
         List<Seller> fullSellersList = new ArrayList<>();
 
-        System.out.println(" ===== Получение недостающих данных для каждого Seller из репозитория  " );
+        System.out.println(" ===== Получение недостающих данных для каждого Seller из репозитория  ");
         for (Seller seller : sellers) {
             // Получение недостающих данных для каждого Seller из репозитория
             Optional<Seller> sellerFromRepo = sellerService.findById(seller.getId());
             if (sellerFromRepo.isPresent()) {
                 fullSellersList.add(sellerFromRepo.get());
+                System.out.println("seller   где данные  = " + sellerFromRepo);
             } else {
                 System.out.println("Seller not found for ID: " + seller.getId());
             }
         }
-//        AlfaBankCoursesService.start();
-            alfaBankCoursesService.bigStart(fullSellersList);
-//        AlfaBankCoursesService.getAlfaNB();
+//       проверка курсов валюты, если их нет, то записывает актуальные курсы из Альфабанка
+        System.out.println(" =================   проверяем курсы валюты ============= " );
+        alfaBankCoursesService.checkNbCourses(fullSellersList);
+        System.out.println(" =================    курсы валюты    OK ============= " );
+//        Проверяет наличие ошибок в шапке каждого из продавцов
+        System.out.println(" =================   проверяем headers ============= " );
+        String failCollumnsNumbers = xlsxParse.checkFailInAllSellersHeaders(fullSellersList);
+        if (failCollumnsNumbers.isEmpty()) System.out.println("Все значения в шапках поставщиков совпадают!!!! " + failCollumnsNumbers);
+        else {
+            System.out.println("failCollumnsNumbers = " + failCollumnsNumbers);
+        }
+        System.out.println(" =================    headers    OK     ============= " );
 
-
+        System.out.println(" ========= парсинг файлов =======  " );
+        String parsingError = xlsxParse.parseAllXlsxFiles(fullSellersList);
+        System.out.println("parsingError = " + parsingError);
 
         String fileName = "Тут будет имя файла";
         return fileName;

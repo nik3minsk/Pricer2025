@@ -25,4 +25,12 @@ public class Brand {
     @Column(name = "website", length = 100)
     private String website;
 
+    @Override
+    public String toString() {
+        return "Brand{" +
+                "id=" + id +
+                ", brandName='" + brandName + '\'' +
+                ", website='" + website + '\'' +
+                '}';
+    }
 }
