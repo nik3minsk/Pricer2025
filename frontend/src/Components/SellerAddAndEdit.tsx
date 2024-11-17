@@ -131,7 +131,9 @@ const SellerAddAndEdit: React.FC<PriceAddAndEditProps> = ({ isGeneralPrice, pric
 
     const folderPath = "/Users/nik3minsk/IdeaProjects/pricer2025/xlsx"; // Set your folder path here
     const handleFileSelect = (file) => {
+        setPathToPrice(file);
         // setValue(file); // Set the selected file path to your state
+
     };
 
     return (
@@ -145,7 +147,11 @@ const SellerAddAndEdit: React.FC<PriceAddAndEditProps> = ({ isGeneralPrice, pric
                 <Group align={'start'} grow>
                     <Stack>
                         <TextInput value={priceName} onChange={(event) => setPriceName(event.currentTarget.value)} placeholder="* Название прайса" required />
+
                         {/*<TextInput value={pathToPrice} onChange={(event) => setPathToPrice(event.currentTarget.value)} placeholder="* Ссылка на прайс" required />*/}
+
+                        {/*файлы выбирает, но не передает значение*/}
+                        {/*<FileSelector folderPath={folderPath} onSelectFile={handleFileSelect} /> /!* Add the FileSelector component *!/*/}
                         <FileSelector folderPath={folderPath} onSelectFile={handleFileSelect} /> {/* Add the FileSelector component */}
 
                         <CurrencySelector onCurrencySelect={setCurrencyCode} />

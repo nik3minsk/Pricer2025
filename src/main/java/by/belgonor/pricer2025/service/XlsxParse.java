@@ -17,15 +17,17 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+
 
 @Service
 public class XlsxParse {
 
     @Autowired
-    private  RulesForXlsxRepo rulesForXlsxRepo;
+    private RulesForXlsxRepo rulesForXlsxRepo;
 
     @Autowired
     private XlsxHeaderValueRepo xlsxHeaderValueRepo;
@@ -41,11 +43,11 @@ public class XlsxParse {
     @Autowired
     private TotalPriceRepo totalPriceRepo;
 
-
+    //        Проверяет наличие ошибок в шапке каждого из продавцов
     public String checkFailInAllSellersHeaders(List<Seller> sellers) {
         StringBuilder errorText = new StringBuilder();
         System.out.println(" ================   мы в   checkFailInAllSellersHeaders =====  ");
-        for (Seller seller: sellers){
+        for (Seller seller : sellers) {
             System.out.println("seller = " + seller);
             String result = checkFailInHeader(seller);
             if (!result.isEmpty()) {
@@ -58,6 +60,7 @@ public class XlsxParse {
         return errorText.toString();
     }
 
+    //        Проверяет наличие ошибок в шапке
     public String checkFailInHeader(Seller seller) {
         System.out.println(" \b ===  checkFailInHeader======= \b");
         String failCollumnsNumbers = "";
@@ -154,8 +157,8 @@ public class XlsxParse {
     }
 
 
-//                  ##########   парсинг значений шапки c записью их в объект XlsxHeaderValue headerValues ###################
-    public static void parseXlsxHeader(String fileToRead, Integer headerStringNumber, RulesForXlsx rulesForXlsxHeaders, XlsxHeaderValue headerValues){
+    //                  ##########   парсинг значений шапки c записью их в объект XlsxHeaderValue headerValues ###################
+    public static void parseXlsxHeader(String fileToRead, Integer headerStringNumber, RulesForXlsx rulesForXlsxHeaders, XlsxHeaderValue headerValues) {
         Path.of(fileToRead);
         System.out.println("pathOfFile = " + fileToRead);
 
@@ -240,15 +243,17 @@ public class XlsxParse {
 
 //    парсинг всех файлов поставщиков
 
-    public String parseAllXlsxFiles (List<Seller> sellers){
+    public String parseAllXlsxFiles(List<Seller> sellers) {
         StringBuilder errorText = new StringBuilder();
         System.out.println(" ================   мы в   parseAllXlsxFiles =====  ");
-        for (Seller seller: sellers){
+        for (Seller seller : sellers) {
             System.out.println("seller = " + seller);
             String result = parseXlsxFile(seller);
+            System.out.println("result = " + result);
             if (!result.isEmpty()) {
                 if (errorText.length() > 0) {
                     errorText.append(" ");
+//                    errorText.append("Прайс ").append(seller.getPriceName()).append(" содержит ошибки");
                 }
                 errorText.append("Прайс ").append(seller.getPriceName()).append(" содержит ошибки");
             }
@@ -256,11 +261,12 @@ public class XlsxParse {
         return errorText.toString();
     }
 
-    public String parseXlsxFile(Seller seller){
-        String badParsingInFile = seller.getPriceName();
+    public String parseXlsxFile(Seller seller) {
+        String badParsingInFile = "";
         String fileToRead = seller.getPathToPrice();
         Path.of(fileToRead);
-        System.out.println("pathOfFile = " + fileToRead);
+        System.out.println("start parsing of file where pathOfFile = " + fileToRead);
+        LocalDate dateNow = LocalDate.now();
 
         InputStream inputStream = null;
         XSSFWorkbook workBook = null;
@@ -274,33 +280,52 @@ public class XlsxParse {
 
         int rowStart = seller.getXlsPriceRules().getStartPriceDataRowNumber() - 1;
         int rowEnd = sheet.getLastRowNum();
-        TotalPrice addToPrice = new TotalPrice();
+//        TotalPrice addToPrice = new TotalPrice();
+//        ========= получаем значения всех брендов   =======
         List<Brand> brands = brandService.findAll();
         System.out.println("brands = " + brands);
 
 
         for (int rw = rowStart; rw <= rowEnd; rw++) {
+            TotalPrice addToPrice = new TotalPrice();
             XSSFRow row = sheet.getRow(rw);
             if (row == null) {
                 System.out.println("row '" + rw + "' is not created");
                 continue;
             }
-//            записываем значения полей шапки в объект headerValues
+            //     *   записываем поля первого ранга в промежуточный объект addToPrice
+            addToPrice.setDate(dateNow);
+            addToPrice.setIdSaler(seller);
+            addToPrice.setCurrencyCode(seller.getEconomicRules().getCurrencyCode());
+//      *      записываем значения полей в промежуточный объект addToPrice
+            for (Brand brand : brands) {
+                String brandFromXlsx = FindXlsxCellsFormat.cellOfString(row, seller.getXlsPriceRules().getColumnBrand() - 1).trim();
+                System.out.println("seller = " + seller);
+                System.out.println("brandFromXlsx = " + brandFromXlsx);
+                if (brand.getBrandName().toString().toUpperCase().equals(brandFromXlsx.toUpperCase())) {
+                    addToPrice.setIdBrand(brand);
+                    break;
+                }
+            }
+            //     *   записываем обязательные поля
+            addToPrice.setArticle(FindXlsxCellsFormat.cellOfString(row, seller.getXlsPriceRules().getColumnArticle() - 1).trim());
+            addToPrice.setProductName(FindXlsxCellsFormat.cellOfString(row, seller.getXlsPriceRules().getColumnProductName() - 1).trim().substring(0, 300));
+            addToPrice.setPrice(FindXlsxCellsFormat.cellOfBigDecimal(row, seller.getXlsPriceRules().getColumnPrice() - 1));
+//     *   записываем необязательные поля
+            if (seller.getXlsPriceRules().getColumnProductCategory() != 0) addToPrice.setProductCategory(FindXlsxCellsFormat.cellOfString(row, seller.getXlsPriceRules().getColumnProductCategory() - 1).trim());
+            if (seller.getXlsPriceRules().getColumnOnStock() != 0) addToPrice.setOnStock(FindXlsxCellsFormat.cellOfString(row, seller.getXlsPriceRules().getColumnPriceOnStockOwn() - 1).trim());
+            if (seller.getXlsPriceRules().getColumnTnved() !=0) addToPrice.setTnvedCode(FindXlsxCellsFormat.cellOfString(row, seller.getXlsPriceRules().getColumnTnved() - 1).trim());
+            if (seller.getXlsPriceRules().getColumnBarcode() != 0) addToPrice.setBarcode(FindXlsxCellsFormat.cellOfString(row, seller.getXlsPriceRules().getColumnBarcode() - 1).trim());
+            if (seller.getXlsPriceRules().getColumnPriceOnStockOwn() !=0) addToPrice.setPriceOnStockOwn(FindXlsxCellsFormat.cellOfBigDecimal(row, seller.getXlsPriceRules().getColumnPriceOnStockOwn() - 1));
+            if (seller.getXlsPriceRules().getColumnReservedOnStockOwn() !=0) addToPrice.setReservationOnStock(FindXlsxCellsFormat.cellOfDouble(row, seller.getXlsPriceRules().getColumnReservedOnStockOwn() - 1));
+            if (seller.getXlsPriceRules().getColumnFreeOnStock() !=0) addToPrice.setFreeOnStock(FindXlsxCellsFormat.cellOfDouble(row, seller.getXlsPriceRules().getColumnFreeOnStock() - 1));
+            if (seller.getXlsPriceRules().getColumnPriceForSiteOwn() !=0) addToPrice.setPriceForSaleOwn(FindXlsxCellsFormat.cellOfBigDecimal(row, seller.getXlsPriceRules().getColumnPriceForSiteOwn() - 1));
 
-//            if (rulesForXlsxHeaders.getColumnBrand() - 1 >= 0) {
-//                headerValues.setColumnBrand(FindXlsxCellsFormat.cellOfString(row, rulesForXlsxHeaders.getColumnBrand() - 1).toString());
-//            }
-//
-//            System.out.println("по ячейке = " + row.getCell(0).getStringCellValue());
-//
-//            if (rulesForXlsxHeaders.getColumnArticle() - 1 >= 0) {
-//                headerValues.setColumnArticle(FindXlsxCellsFormat.cellOfString(row, rulesForXlsxHeaders.getColumnArticle() - 1).toString());
-//            }
+//            *     запись в БД строки
+            totalPriceRepo.save(addToPrice);
 
-
-//            System.out.println("headerValues = " + headerValues);
         }
-
         return badParsingInFile;
     }
 }
+

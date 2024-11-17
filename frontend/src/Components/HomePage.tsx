@@ -73,6 +73,23 @@ const HomePage = (): React.JSX.Element => {
         }
     };
 
+
+    const editPrice = async () => {
+        if (selectedSellerId) {
+            try {
+                // await axios.delete(`${BACK_URL}/api/sellers/${selectedSellerId}`);
+                // setSellers(sellers.filter(seller => seller.id !== selectedSellerId));
+                // setSelectedSellerId(null);
+                // setServerResponse('Прайс успешно удален');
+            } catch (error) {
+                // console.error('Ошибка при удалении прайса:', error);
+                // setServerResponse('Ошибка при удалении прайса');
+            }
+        } else {
+            // setServerResponse('Выберите прайс для удаления');
+        }
+    };
+
     const handleComparePrices = async () => {
         const sellerData = sellers.map(seller => ({
             id: seller.id,
@@ -133,45 +150,12 @@ const HomePage = (): React.JSX.Element => {
                     width: '300px',
                     overflow: 'hidden'
                 }}>
-                    <Button
-                        onClick={openGeneralPrice}
-                        fullWidth
-                        style={{marginBottom: '10px', cursor: hasGeneralPrice ? 'not-allowed' : 'pointer'}}
-                        disabled={hasGeneralPrice}
-                    >
-                        Добавить собственный прайс
-                    </Button>
-                    <Button
-                        onClick={openSupplierPrice}
-                        fullWidth
-                        style={{marginBottom: '10px', cursor: sellers.length >= 4 ? 'not-allowed' : 'pointer'}}
-                        disabled={sellers.length >= 4}
-                    >
-                        Добавить поставщика
-                    </Button>
-                    <Button onClick={handleDelete} fullWidth style={{marginBottom: '35px'}}>Удалить прайс</Button>
-                    <Button
-                        onClick={handleComparePrices}
-                        fullWidth
-                        style={{marginBottom: '35px', backgroundColor: '#00FF00', color: '#000'}}
-                    >
-                        Сравнить цены
-                    </Button>
-
-
-                    <Button
-                        onClick={openHelp}
-                        fullWidth
-                        style={{
-                            marginBottom: '15px',
-                            backgroundColor: '#FF9900',
-                            color: '#000',
-                            width: '100%',
-                        }}
-                        // className="action-button help-button"
-                    >
-                        Help
-                    </Button>
+                    <Button onClick={openGeneralPrice} fullWidth style={{marginBottom: '10px', cursor: hasGeneralPrice ? 'not-allowed' : 'pointer'}} disabled={hasGeneralPrice}>Добавить собственный прайс</Button>
+                    <Button onClick={openSupplierPrice} fullWidth style={{marginBottom: '10px', cursor: sellers.length >= 4 ? 'not-allowed' : 'pointer'}} disabled={sellers.length >= 4}>Добавить прайс поставщика</Button>
+                    <Button onClick={editPrice} fullWidth style={{marginBottom: '10px'}}>Редактировать прайс</Button>
+                    <Button onClick={handleDelete} fullWidth style={{marginBottom: '30px'}}>Удалить прайс</Button>
+                    <Button onClick={handleComparePrices} fullWidth style={{marginBottom: '10px', backgroundColor: '#00FF00', color: '#000'}}>Сравнить цены</Button>
+                    <Button onClick={openHelp} fullWidth style={{marginBottom: '7px', backgroundColor: '#FF9900', color: '#000', width: '100%',}}>Help</Button>
 
 
                     <Box style={{marginTop: '20px', width: '100%', overflow: 'hidden'}}>

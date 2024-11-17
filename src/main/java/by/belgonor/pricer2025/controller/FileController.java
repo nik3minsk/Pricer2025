@@ -123,15 +123,22 @@ public class FileController {
 //        Проверяет наличие ошибок в шапке каждого из продавцов
         System.out.println(" =================   проверяем headers ============= " );
         String failCollumnsNumbers = xlsxParse.checkFailInAllSellersHeaders(fullSellersList);
-        if (failCollumnsNumbers.isEmpty()) System.out.println("Все значения в шапках поставщиков совпадают!!!! " + failCollumnsNumbers);
-        else {
-            System.out.println("failCollumnsNumbers = " + failCollumnsNumbers);
-        }
-        System.out.println(" =================    headers    OK     ============= " );
+        if (failCollumnsNumbers.isEmpty()) {
+            System.out.println("Все значения в шапках поставщиков совпадают!!!! " + failCollumnsNumbers);
+            System.out.println(" =================    headers    проверка завершена положительно!!!   ============= " );
 
-        System.out.println(" ========= парсинг файлов =======  " );
-        String parsingError = xlsxParse.parseAllXlsxFiles(fullSellersList);
-        System.out.println("parsingError = " + parsingError);
+//        ==================    Парсинг файлов     ================
+            System.out.println(" ========= Начат парсинг файлов =======  " );
+            String parsingError = xlsxParse.parseAllXlsxFiles(fullSellersList);
+            System.out.println("Печать из FileController parsingError = " + parsingError);
+        }
+        else {
+            System.out.println("Обнаружена ошибка failCollumnsNumbers = " + failCollumnsNumbers);
+        }
+
+
+
+
 
         String fileName = "Тут будет имя файла";
         return fileName;
