@@ -6,6 +6,8 @@ import by.belgonor.pricer2025.repository.BrandRepo;
 import by.belgonor.pricer2025.repository.RulesForXlsxRepo;
 import by.belgonor.pricer2025.repository.TotalPriceRepo;
 import by.belgonor.pricer2025.repository.XlsxHeaderValueRepo;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -293,37 +295,66 @@ public class XlsxParse {
                 System.out.println("row '" + rw + "' is not created");
                 continue;
             }
-            //     *   записываем поля первого ранга в промежуточный объект addToPrice
-            addToPrice.setDate(dateNow);
-            addToPrice.setIdSaler(seller);
-            addToPrice.setCurrencyCode(seller.getEconomicRules().getCurrencyCode());
+
+
+            Cell brandCell = row.getCell(seller.getXlsPriceRules().getColumnBrand() - 1);
+            Cell articleCell = row.getCell(seller.getXlsPriceRules().getColumnArticle() - 1);
+
+            if (brandCell != null && articleCell != null) {
+                // Продовжаем выполнение, если обе ячейки не равны null
+                //     *   записываем поля первого ранга в промежуточный объект addToPrice
+                addToPrice.setDate(dateNow);
+                addToPrice.setIdSaler(seller);
+                addToPrice.setCurrencyCode(seller.getEconomicRules().getCurrencyCode());
 //      *      записываем значения полей в промежуточный объект addToPrice
-            for (Brand brand : brands) {
-                String brandFromXlsx = FindXlsxCellsFormat.cellOfString(row, seller.getXlsPriceRules().getColumnBrand() - 1).trim();
-                System.out.println("seller = " + seller);
-                System.out.println("brandFromXlsx = " + brandFromXlsx);
-                if (brand.getBrandName().toString().toUpperCase().equals(brandFromXlsx.toUpperCase())) {
-                    addToPrice.setIdBrand(brand);
-                    break;
+//      *      проверяем наличие бренда в БД, если его нет - добавляем его
+                boolean needNewBrand = true;
+                Brand newBrand = null;
+                for (Brand brand : brands) {
+                    String brandFromXlsx = FindXlsxCellsFormat.cellOfString(row, seller.getXlsPriceRules().getColumnBrand() - 1).trim();
+//                    System.out.println("seller = " + seller);
+//                    System.out.println("brandFromXlsx = " + brandFromXlsx);
+                    if (brand.getBrandName().toString().toUpperCase().equals(brandFromXlsx.toUpperCase())) {
+                        addToPrice.setIdBrand(brand);
+                        needNewBrand = false;
+                        break;
+                    }
                 }
-            }
-            //     *   записываем обязательные поля
-            addToPrice.setArticle(FindXlsxCellsFormat.cellOfString(row, seller.getXlsPriceRules().getColumnArticle() - 1).trim());
-            addToPrice.setProductName(FindXlsxCellsFormat.cellOfString(row, seller.getXlsPriceRules().getColumnProductName() - 1).trim().substring(0, 300));
-            addToPrice.setPrice(FindXlsxCellsFormat.cellOfBigDecimal(row, seller.getXlsPriceRules().getColumnPrice() - 1));
+                if (needNewBrand) {
+                    newBrand = new Brand();
+                    newBrand.setBrandName((FindXlsxCellsFormat.cellOfString(row, seller.getXlsPriceRules().getColumnBrand() - 1).trim()).toUpperCase());
+                    brandRepo.save(newBrand);
+                    addToPrice.setIdBrand(newBrand);
+                    brands = brandService.findAll();
+                }
+
+
+                //     *   записываем обязательные поля
+                addToPrice.setArticle(FindXlsxCellsFormat.cellOfString(row, seller.getXlsPriceRules().getColumnArticle() - 1).trim());
+                addToPrice.setProductName(FindXlsxCellsFormat.cellOfString(row, seller.getXlsPriceRules().getColumnProductName() - 1).trim());
+                if (addToPrice.getProductName().length() > 300) {addToPrice.setProductName(addToPrice.getProductName().substring(0, 300));}
+                addToPrice.setPrice(FindXlsxCellsFormat.cellOfBigDecimal(row, seller.getXlsPriceRules().getColumnPrice() - 1));
 //     *   записываем необязательные поля
-            if (seller.getXlsPriceRules().getColumnProductCategory() != 0) addToPrice.setProductCategory(FindXlsxCellsFormat.cellOfString(row, seller.getXlsPriceRules().getColumnProductCategory() - 1).trim());
-            if (seller.getXlsPriceRules().getColumnOnStock() != 0) addToPrice.setOnStock(FindXlsxCellsFormat.cellOfString(row, seller.getXlsPriceRules().getColumnPriceOnStockOwn() - 1).trim());
-            if (seller.getXlsPriceRules().getColumnTnved() !=0) addToPrice.setTnvedCode(FindXlsxCellsFormat.cellOfString(row, seller.getXlsPriceRules().getColumnTnved() - 1).trim());
-            if (seller.getXlsPriceRules().getColumnBarcode() != 0) addToPrice.setBarcode(FindXlsxCellsFormat.cellOfString(row, seller.getXlsPriceRules().getColumnBarcode() - 1).trim());
-            if (seller.getXlsPriceRules().getColumnPriceOnStockOwn() !=0) addToPrice.setPriceOnStockOwn(FindXlsxCellsFormat.cellOfBigDecimal(row, seller.getXlsPriceRules().getColumnPriceOnStockOwn() - 1));
-            if (seller.getXlsPriceRules().getColumnReservedOnStockOwn() !=0) addToPrice.setReservationOnStock(FindXlsxCellsFormat.cellOfDouble(row, seller.getXlsPriceRules().getColumnReservedOnStockOwn() - 1));
-            if (seller.getXlsPriceRules().getColumnFreeOnStock() !=0) addToPrice.setFreeOnStock(FindXlsxCellsFormat.cellOfDouble(row, seller.getXlsPriceRules().getColumnFreeOnStock() - 1));
-            if (seller.getXlsPriceRules().getColumnPriceForSiteOwn() !=0) addToPrice.setPriceForSaleOwn(FindXlsxCellsFormat.cellOfBigDecimal(row, seller.getXlsPriceRules().getColumnPriceForSiteOwn() - 1));
+                if (seller.getXlsPriceRules().getColumnProductCategory() != 0)
+                    addToPrice.setProductCategory(FindXlsxCellsFormat.cellOfString(row, seller.getXlsPriceRules().getColumnProductCategory() - 1).trim());
+                if (seller.getXlsPriceRules().getColumnOnStock() != 0)
+                    addToPrice.setOnStock(FindXlsxCellsFormat.cellOfString(row, seller.getXlsPriceRules().getColumnPriceOnStockOwn() - 1).trim());
+                if (seller.getXlsPriceRules().getColumnTnved() != 0)
+                    addToPrice.setTnvedCode(FindXlsxCellsFormat.cellOfString(row, seller.getXlsPriceRules().getColumnTnved() - 1).trim());
+                if (seller.getXlsPriceRules().getColumnBarcode() != 0)
+                    addToPrice.setBarcode(FindXlsxCellsFormat.cellOfString(row, seller.getXlsPriceRules().getColumnBarcode() - 1).trim());
+                if (seller.getXlsPriceRules().getColumnPriceOnStockOwn() != 0)
+                    addToPrice.setPriceOnStockOwn(FindXlsxCellsFormat.cellOfBigDecimal(row, seller.getXlsPriceRules().getColumnPriceOnStockOwn() - 1));
+                if (seller.getXlsPriceRules().getColumnReservedOnStockOwn() != 0)
+                    addToPrice.setReservationOnStock(FindXlsxCellsFormat.cellOfDouble(row, seller.getXlsPriceRules().getColumnReservedOnStockOwn() - 1));
+                if (seller.getXlsPriceRules().getColumnFreeOnStock() != 0)
+                    addToPrice.setFreeOnStock(FindXlsxCellsFormat.cellOfDouble(row, seller.getXlsPriceRules().getColumnFreeOnStock() - 1));
+                if (seller.getXlsPriceRules().getColumnPriceForSiteOwn() != 0)
+                    addToPrice.setPriceForSaleOwn(FindXlsxCellsFormat.cellOfBigDecimal(row, seller.getXlsPriceRules().getColumnPriceForSiteOwn() - 1));
 
 //            *     запись в БД строки
-            totalPriceRepo.save(addToPrice);
-
+                totalPriceRepo.save(addToPrice);
+            }
         }
         return badParsingInFile;
     }
