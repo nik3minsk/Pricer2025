@@ -6,6 +6,8 @@ import by.belgonor.pricer2025.entity.*;
 import by.belgonor.pricer2025.repository.*;
 import by.belgonor.pricer2025.service.SellerService;
 import by.belgonor.pricer2025.service.XlsxParse;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -15,6 +17,7 @@ import by.belgonor.pricer2025.entity.Seller;
 import by.belgonor.pricer2025.repository.SellerRepo;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
+
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -34,14 +37,14 @@ public class SellerController {
     private RulesForBusinessRepo rulesForBusinessRepo;
     @Autowired
     private SellerRepo sellerRepo;
-//    @Autowired
+    //    @Autowired
 //    private SellerService sellerService;
     @Autowired
     private RulesForXlsxRepo rulesForXlsxRepo;
     @Autowired
     private XlsxHeaderValueRepo xlsxHeaderValueRepo;
 
-//    @PostMapping("/api/addPrice2")
+    //    @PostMapping("/api/addPrice2")
     @PostMapping("/api/addSeller")
     public ResponseEntity<String> addPrice(@RequestBody SellerRequest sellerRequest) {
         log.info("Saving price details: " + sellerRequest.getSellerDetails());
@@ -112,6 +115,49 @@ public class SellerController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Ошибка при удалении прайса");
         }
     }
+
+//    @Autowired private ObjectMapper objectMapper; // Для преобразования объекта в JSON
+//    @GetMapping("/api/sellers/{id}")
+//    public ResponseEntity<String> getSeller(@PathVariable Integer id) {
+//        try {
+////            sellerRepo.findById(id).orElseThrow();
+//
+//            Seller seller = sellerRepo.findById(id).orElseThrow();
+//            System.out.println("seller = " + seller);
+//            String json = objectMapper.writeValueAsString(seller); // Преобразование объекта в JSON строку return ResponseEntity.ok(json);
+//            System.out.println("json = " + json);
+//            return ResponseEntity.ok(json);
+////            return ResponseEntity.ok(seller);
+////            return ResponseEntity.ok(sellerRepo.findById(id).get().toString());
+////            sellerRepo.deleteById(id);
+////            return ResponseEntity.ok("Прайс успешно удален");
+//        } catch (Exception e) {
+//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Ошибка при удалении прайса");
+//        }
+//    }
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    // Для преобразования объекта в JSON
+
+    @GetMapping("/api/sellers/{id}")
+    public ResponseEntity<String> getSeller(@PathVariable Integer id) {
+        try {
+            Seller seller = sellerRepo.findById(id).orElseThrow();
+            System.out.println("seller = " + seller);
+            objectMapper.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
+            // Отключение проверки на пустые бинарные объекты
+            String json = objectMapper.writeValueAsString(seller);
+            System.out.println("json = " + json);
+            // Преобразование объекта в JSON строку
+            return ResponseEntity.ok(json);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Ошибка при получении данных продавца");
+        }
+    }
+
 
 //
 //    @Autowired

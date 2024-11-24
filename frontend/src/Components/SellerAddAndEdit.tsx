@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, {useEffect, useState} from "react";
 import '@mantine/core/styles.css';
 import '@mantine/dates/styles.css';
 import '@mantine/dropzone/styles.css';
@@ -16,32 +16,106 @@ interface PriceAddAndEditProps {
     close: () => void;
     setServerResponse: (response: string) => void;
     setResponseType: (type: string) => void;
+    selectedSellerId?: number,
 }
 
-const SellerAddAndEdit: React.FC<PriceAddAndEditProps> = ({ isGeneralPrice, priceNumber, opened, close, setServerResponse, setResponseType  }) => {
-    const [priceName, setPriceName] = useState('');
-    const [pathToPrice, setPathToPrice] = useState('');
-    const [currencyCode, setCurrencyCode] = useState<number | string>('');
-    const [vatRate, setVatRate] = useState<number | string>('');
-    const [currencyBankCoeff, setCurrencyBankCoeff] = useState<number | string>('');
-    const [coeffDeliveryCost, setCoeffDeliveryCost] = useState<number | string>('');
-    const [minOrderSum, setMinOrderSum] = useState<number | string>('');
-    const [brandColNumber, setBrandColNumber] = useState<number | string>('');
-    const [articleColNumber, setArticleColNumber] = useState<number | string>('');
-    const [productCategoryColNumber, setProductCategoryColNumber] = useState<number | string>('');
-    const [productNameColNumber, setProductNameColNumber] = useState<number | string>('');
-    const [priceColNumber, setPriceColNumber] = useState<number | string>('');
-    const [onStockColNumber, setOnStockColNumber] = useState<number | string>('');
-    const [barcodeColNumber, setBarcodeColNumber] = useState<number | string>('');
-    const [tnvedColNumber, setTnvedColNumber] = useState<number | string>('');
-    const [ownPriceColNumber, setOwnPriceColNumber] = useState<number | string>('');
-    const [ownOnStockColNumber, setOwnOnStockColNumber] = useState<number | string>('');
-    const [ownReservedOnStockColNumber, setOwnReservedOnStockColNumber] = useState<number | string>('');
-    const [ownFreeOnStockColNumber, setOwnFreeOnStockColNumber] = useState<number | string>('');
-    const [ownPriceForSiteColNumber, setOwnPriceForSiteColNumber] = useState<number | string>('');
+export interface PriceSettings {
+    priceName: string,
+    pathToPrice: string,
+    currencyCode: number,
+    vatRate: number,
+    currencyBankCoeff: number,
+    coeffDeliveryCost: number,
+    minOrderSum: number,
+    brandColNumber: number,
+    articleColNumber: number,
+    productCategoryColNumber: number,
+    productNameColNumber: number,
+    priceColNumber: number,
+    onStockColNumber: number,
+    barcodeColNumber: number,
+    tnvedColNumber: number,
+    ownPriceColNumber: number,
+    ownOnStockColNumber: number,
+    ownReservedOnStockColNumber: number,
+    ownFreeOnStockColNumber: number,
+    ownPriceForSiteColNumber: number,
+    headerRowNumber: number,
+    startPriceRowNumber: number,
+}
 
-    const [headerRowNumber, setHeaderRowNumber] = useState<number | string>('');
-    const [startPriceRowNumber, setStartPriceRowNumber] = useState<number | string>('');
+function transformToPriceSettings(source: any): PriceSettings {
+    return {
+        priceName: source.priceName,
+        pathToPrice: source.pathToPrice,
+        currencyCode: source.economicRules.currencyCode.currencyCode,
+        vatRate: source.economicRules.vatPercentInPrice,
+        currencyBankCoeff: source.economicRules.currencyCoefficient,
+        coeffDeliveryCost: source.economicRules.deliveryCoefficient,
+        minOrderSum: source.economicRules.minOrderSum,
+        brandColNumber: source.xlsPriceRules.columnBrand,
+        articleColNumber: source.xlsPriceRules.columnArticle,
+        productCategoryColNumber: source.xlsPriceRules.columnProductCategory,
+        productNameColNumber: source.xlsPriceRules.columnProductName,
+        priceColNumber: source.xlsPriceRules.columnPrice,
+        onStockColNumber: source.xlsPriceRules.columnOnStock,
+        barcodeColNumber: source.xlsPriceRules.columnBarcode,
+        tnvedColNumber: source.xlsPriceRules.columnTnved,
+        ownPriceColNumber: source.xlsPriceRules.columnPriceOnStockOwn,
+        ownOnStockColNumber: source.xlsPriceRules.columnOnStockOwn,
+        ownReservedOnStockColNumber: source.xlsPriceRules.columnReservedOnStockOwn,
+        ownFreeOnStockColNumber: source.xlsPriceRules.columnFreeOnStock,
+        ownPriceForSiteColNumber: source.xlsPriceRules.columnPriceForSiteOwn,
+        headerRowNumber: source.xlsPriceRules.headerStringNumber,
+        startPriceRowNumber: source.xlsPriceRules.startPriceDataRowNumber
+    };
+}
+
+
+const SellerAddAndEdit: React.FC<PriceAddAndEditProps> = ({ isGeneralPrice, priceNumber, opened, close, setServerResponse, setResponseType, selectedSellerId  }) => {
+    let priceSettings = undefined
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const response = await axios.get(`${BACK_URL}/api/sellers/${selectedSellerId}`);
+                priceSettings = transformToPriceSettings(response.data)
+                // Update state or perform other actions with the data
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
+        };
+
+        fetchData();
+
+        // Optional: Return a cleanup function if needed
+        return () => {
+            // Cleanup logic here
+        };
+    }, []); // dependencies array
+
+    const [priceName, setPriceName] = useState(priceSettings?.priceName || '');
+    const [pathToPrice, setPathToPrice] = useState(priceSettings?.pathToPrice || '');
+    const [currencyCode, setCurrencyCode] = useState<number | string>(priceSettings?.currencyCode || '');
+    const [vatRate, setVatRate] = useState<number | string>(priceSettings?.vatRate || '');
+    const [currencyBankCoeff, setCurrencyBankCoeff] = useState<number | string>(priceSettings?.currencyBankCoeff || '');
+    const [coeffDeliveryCost, setCoeffDeliveryCost] = useState<number | string>(priceSettings?.coeffDeliveryCost || '');
+    const [minOrderSum, setMinOrderSum] = useState<number | string>(priceSettings?.minOrderSum || '');
+    const [brandColNumber, setBrandColNumber] = useState<number | string>(priceSettings?.brandColNumber || '');
+    const [articleColNumber, setArticleColNumber] = useState<number | string>(priceSettings?.articleColNumber || '');
+    const [productCategoryColNumber, setProductCategoryColNumber] = useState<number | string>(priceSettings?.productCategoryColNumber || '');
+    const [productNameColNumber, setProductNameColNumber] = useState<number | string>(priceSettings?.productNameColNumber || '');
+    const [priceColNumber, setPriceColNumber] = useState<number | string>(priceSettings?.priceColNumber || '');
+    const [onStockColNumber, setOnStockColNumber] = useState<number | string>(priceSettings?.onStockColNumber || '');
+    const [barcodeColNumber, setBarcodeColNumber] = useState<number | string>(priceSettings?.barcodeColNumber || '');
+    const [tnvedColNumber, setTnvedColNumber] = useState<number | string>(priceSettings?.tnvedColNumber || '');
+    const [ownPriceColNumber, setOwnPriceColNumber] = useState<number | string>(priceSettings?.ownPriceColNumber || '');
+    const [ownOnStockColNumber, setOwnOnStockColNumber] = useState<number | string>(priceSettings?.ownOnStockColNumber || '');
+    const [ownReservedOnStockColNumber, setOwnReservedOnStockColNumber] = useState<number | string>(priceSettings?.ownReservedOnStockColNumber || '');
+    const [ownFreeOnStockColNumber, setOwnFreeOnStockColNumber] = useState<number | string>(priceSettings?.ownFreeOnStockColNumber || '');
+    const [ownPriceForSiteColNumber, setOwnPriceForSiteColNumber] = useState<number | string>(priceSettings?.ownPriceForSiteColNumber || '');
+    console.log(priceSettings)
+    const [headerRowNumber, setHeaderRowNumber] = useState<number | string>(priceSettings?.headerRowNumber || '');
+    const [startPriceRowNumber, setStartPriceRowNumber] = useState<number | string>(priceSettings?.startPriceRowNumber || '');
 
 
     const handleClearValues = () => {
@@ -130,7 +204,7 @@ const SellerAddAndEdit: React.FC<PriceAddAndEditProps> = ({ isGeneralPrice, pric
     };
 
     const folderPath = "/Users/nik3minsk/IdeaProjects/pricer2025/xlsx"; // Set your folder path here
-    const handleFileSelect = (file) => {
+    const handleFileSelect = (file:any) => {
         setPathToPrice(file);
         // setValue(file); // Set the selected file path to your state
 
