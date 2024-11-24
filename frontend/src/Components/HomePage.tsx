@@ -90,21 +90,51 @@ const HomePage = (): React.JSX.Element => {
         }
     };
 
+    // const handleComparePrices = async () => {
+    //     const sellerData = sellers.map(seller => ({
+    //         id: seller.id,
+    //         priceName: seller.priceName,
+    //         isGeneralPrice: seller.isGeneralPrice
+    //     }));
+    //
+    //     try {
+    //         const response = await axios.post(`${BACK_URL}/api/files/compare`, sellerData);
+    //         setServerResponse(`Файл сравнения создан: ${response.data}`);
+    //     } catch (error) {
+    //         console.error('Ошибка при сравнении цен:', error);
+    //         setServerResponse('Ошибка при сравнении цен');
+    //     }
+    // };
+
+
     const handleComparePrices = async () => {
         const sellerData = sellers.map(seller => ({
             id: seller.id,
             priceName: seller.priceName,
             isGeneralPrice: seller.isGeneralPrice
         }));
-
         try {
             const response = await axios.post(`${BACK_URL}/api/files/compare`, sellerData);
-            setServerResponse(`Файл сравнения создан: ${response.data}`);
+            console.log(response)
+            const filePath = response.data; // Загружаем файл пользователю через браузер
+            console.log(filePath)
+
+            const fileResponse = await axios.get(filePath, {responseType: 'blob',});
+            const url = window.URL.createObjectURL(new Blob([fileResponse.data]));
+            const link = document.createElement('a');
+            link.href = url;
+
+            // link.setAttribute('download', 'comparison_file.xlsx'); // Или  response.headers['content-disposition'] для имени файла
+            link.setAttribute('download', response.data); // Или  response.headers['content-disposition'] для имени файла
+
+            document.body.appendChild(link);
+            link.click();
         } catch (error) {
             console.error('Ошибка при сравнении цен:', error);
             setServerResponse('Ошибка при сравнении цен');
         }
     };
+
 
     return (
         <Stack align="center" justify="center" style={{minHeight: '100vh'}}>
@@ -136,7 +166,10 @@ const HomePage = (): React.JSX.Element => {
                                 }
                                 checked={selectedSellerId === seller.id}
                                 onChange={() => handleCheckboxChange(seller.id)}
-                                style={{marginBottom: '10px', color: seller.isGeneralPrice ? 'green' : 'inherit'}}
+                                style={{
+                                    marginBottom: '10px',
+                                    color: seller.isGeneralPrice ? 'green' : 'inherit'
+                                }}
                             />
                         ))}
                     </div>
@@ -150,12 +183,26 @@ const HomePage = (): React.JSX.Element => {
                     width: '300px',
                     overflow: 'hidden'
                 }}>
-                    <Button onClick={openGeneralPrice} fullWidth style={{marginBottom: '10px', cursor: hasGeneralPrice ? 'not-allowed' : 'pointer'}} disabled={hasGeneralPrice}>Добавить собственный прайс</Button>
-                    <Button onClick={openSupplierPrice} fullWidth style={{marginBottom: '10px', cursor: sellers.length >= 4 ? 'not-allowed' : 'pointer'}} disabled={sellers.length >= 4}>Добавить прайс поставщика</Button>
-                    <Button onClick={editPrice} fullWidth style={{marginBottom: '10px'}}>Редактировать прайс</Button>
-                    <Button onClick={handleDelete} fullWidth style={{marginBottom: '30px'}}>Удалить прайс</Button>
-                    <Button onClick={handleComparePrices} fullWidth style={{marginBottom: '10px', backgroundColor: '#00FF00', color: '#000'}}>Сравнить цены</Button>
-                    <Button onClick={openHelp} fullWidth style={{marginBottom: '7px', backgroundColor: '#FF9900', color: '#000', width: '100%',}}>Help</Button>
+                    <Button onClick={openGeneralPrice} fullWidth
+                            style={{marginBottom: '10px', cursor: hasGeneralPrice ? 'not-allowed' : 'pointer'}}
+                            disabled={hasGeneralPrice}>Добавить собственный прайс</Button>
+                    <Button onClick={openSupplierPrice} fullWidth style={{
+                        marginBottom: '10px',
+                        cursor: sellers.length >= 4 ? 'not-allowed' : 'pointer'
+                    }} disabled={sellers.length >= 4}>Добавить прайс поставщика</Button>
+                    <Button onClick={editPrice} fullWidth style={{marginBottom: '10px'}}>Редактировать
+                        прайс</Button>
+                    <Button onClick={handleDelete} fullWidth style={{marginBottom: '30px'}}>Удалить
+                        прайс</Button>
+                    <Button onClick={handleComparePrices} fullWidth
+                            style={{marginBottom: '10px', backgroundColor: '#00FF00', color: '#000'}}>Сравнить
+                        цены</Button>
+                    <Button onClick={openHelp} fullWidth style={{
+                        marginBottom: '7px',
+                        backgroundColor: '#FF9900',
+                        color: '#000',
+                        width: '100%',
+                    }}>Help</Button>
 
 
                     <Box style={{marginTop: '20px', width: '100%', overflow: 'hidden'}}>
@@ -185,9 +232,12 @@ const HomePage = (): React.JSX.Element => {
                 setServerResponse={setServerResponse}
                 setResponseType={setResponseType}
             />
-            <Modal opened={openedHelp} onClose={closeHelp} title="Help" centered size="lg" className="modalCentered">
-                <p>Эта программа позволяет управлять списком продавцов, добавлять и удалять прайсы, а также сравнивать
-                    цены между различными поставщиками. Используйте кнопки для выполнения соответствующих действий.</p>
+            <Modal opened={openedHelp} onClose={closeHelp} title="Help" centered size="lg"
+                   className="modalCentered">
+                <p>Эта программа позволяет управлять списком продавцов, добавлять и удалять прайсы, а также
+                    сравнивать
+                    цены между различными поставщиками. Используйте кнопки для выполнения соответствующих
+                    действий.</p>
             </Modal>
         </Stack>
     );

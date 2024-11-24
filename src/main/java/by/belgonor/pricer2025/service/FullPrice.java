@@ -302,7 +302,7 @@ public class FullPrice {
         java.time.LocalDateTime currentDateTime = java.time.LocalDateTime.now();
 
 //        String fileLocation = path.substring(0, path.length() - 1) + "temp.xlsx";
-        String fileLocation = path.substring(0, path.length() - 1) + "compare " + currentDateTime.toString().substring(0, 19) + ".xlsx";
+        String fileLocation = path.substring(0, path.length() - 1) + "compare_" + currentDateTime.toString().substring(0, 19) + ".xlsx";
 
         FileOutputStream outputStream = new FileOutputStream(fileLocation);
         workbook.write(outputStream);

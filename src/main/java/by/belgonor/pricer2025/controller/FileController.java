@@ -101,10 +101,10 @@ public class FileController {
 
     @PostMapping("/api/files/compare")
 //    public String createCompareFile(@RequestBody List<SellerDTO> sellers) throws IOException {
-    public String createCompareFile(@RequestBody List<Seller> sellers) throws IOException {
+    public Path createCompareFile(@RequestBody List<Seller> sellers) throws IOException {
 // Пример использования данных поставщиков
 //        System.out.println("sellers = " + sellers);
-        String fileName = "";
+        Path fileName = null;
         List<Seller> fullSellersList = new ArrayList<>();
 
         System.out.println(" ===== Получение недостающих данных для каждого Seller из репозитория  ");
@@ -139,9 +139,10 @@ public class FileController {
             Path isXlsxFileImageCreated = xlsxParse.createXlsxImage();
 
 
-            fileName = isXlsxFileImageCreated.getFileName().toString();
-
+            fileName = isXlsxFileImageCreated;
+            System.out.println("isXlsxFileImageCreated = " + isXlsxFileImageCreated);
         }
-        return fileName;
+//        System.out.println("fileName = " + fileName);
+        return fileName.toAbsolutePath();
     }
 }
