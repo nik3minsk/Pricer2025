@@ -1,13 +1,8 @@
 package by.belgonor.pricer2025.service;
 
-import by.belgonor.pricer2025.controller.FileController;
 import by.belgonor.pricer2025.entity.*;
-import by.belgonor.pricer2025.repository.BrandRepo;
-import by.belgonor.pricer2025.repository.RulesForXlsxRepo;
-import by.belgonor.pricer2025.repository.TotalPriceRepo;
-import by.belgonor.pricer2025.repository.XlsxHeaderValueRepo;
+import by.belgonor.pricer2025.repository.*;
 import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -18,11 +13,11 @@ import org.springframework.web.servlet.View;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.nio.file.Path;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 
 @Service
@@ -44,6 +39,12 @@ public class XlsxParse {
 
     @Autowired
     private TotalPriceRepo totalPriceRepo;
+
+    @Autowired
+    private SellerRepo sellerRepo;
+
+    @Autowired
+    private CurrencyRateRepo currencyRateRepo;
 
     //        Проверяет наличие ошибок в шапке каждого из продавцов
     public String checkFailInAllSellersHeaders(List<Seller> sellers) {
@@ -288,6 +289,9 @@ public class XlsxParse {
         System.out.println("brands = " + brands);
 
 
+        System.out.println("seller = " + seller.getPriceName());
+
+
         for (int rw = rowStart; rw <= rowEnd; rw++) {
             TotalPrice addToPrice = new TotalPrice();
             XSSFRow row = sheet.getRow(rw);
@@ -297,10 +301,18 @@ public class XlsxParse {
             }
 
 
+            Cell priceCell = row.getCell(seller.getXlsPriceRules().getColumnPrice() - 1);
             Cell brandCell = row.getCell(seller.getXlsPriceRules().getColumnBrand() - 1);
             Cell articleCell = row.getCell(seller.getXlsPriceRules().getColumnArticle() - 1);
+            String brandCellValue = FindXlsxCellsFormat.cellOfString(row, seller.getXlsPriceRules().getColumnBrand() - 1).trim();
+            String articleCellValue = FindXlsxCellsFormat.cellOfString(row, seller.getXlsPriceRules().getColumnArticle() - 1).trim();
 
-            if (brandCell != null && articleCell != null) {
+
+            if ((brandCell != null && !brandCellValue.equals(""))
+                    && (articleCell != null && !articleCellValue.equals(""))
+//                    && priceCell != null && !priceCell.getStringCellValue().isEmpty()
+            ) {
+
                 // Продовжаем выполнение, если обе ячейки не равны null
                 //     *   записываем поля первого ранга в промежуточный объект addToPrice
                 addToPrice.setDate(dateNow);
@@ -332,13 +344,17 @@ public class XlsxParse {
                 //     *   записываем обязательные поля
                 addToPrice.setArticle(FindXlsxCellsFormat.cellOfString(row, seller.getXlsPriceRules().getColumnArticle() - 1).trim());
                 addToPrice.setProductName(FindXlsxCellsFormat.cellOfString(row, seller.getXlsPriceRules().getColumnProductName() - 1).trim());
-                if (addToPrice.getProductName().length() > 300) {addToPrice.setProductName(addToPrice.getProductName().substring(0, 300));}
+                if (addToPrice.getProductName().length() > 300) {
+                    addToPrice.setProductName(addToPrice.getProductName().substring(0, 300));
+                }
                 addToPrice.setPrice(FindXlsxCellsFormat.cellOfBigDecimal(row, seller.getXlsPriceRules().getColumnPrice() - 1));
+                System.out.println("seller.getXlsPriceRules().getColumnPrice() = " + seller.getXlsPriceRules().getColumnPrice());
+                System.out.println("addToPrice.getPrice() = " + addToPrice.getPrice());
 //     *   записываем необязательные поля
                 if (seller.getXlsPriceRules().getColumnProductCategory() != 0)
                     addToPrice.setProductCategory(FindXlsxCellsFormat.cellOfString(row, seller.getXlsPriceRules().getColumnProductCategory() - 1).trim());
                 if (seller.getXlsPriceRules().getColumnOnStock() != 0)
-                    addToPrice.setOnStock(FindXlsxCellsFormat.cellOfString(row, seller.getXlsPriceRules().getColumnPriceOnStockOwn() - 1).trim());
+                    addToPrice.setOnStock(FindXlsxCellsFormat.cellOfString(row, seller.getXlsPriceRules().getColumnOnStock() - 1).trim());
                 if (seller.getXlsPriceRules().getColumnTnved() != 0)
                     addToPrice.setTnvedCode(FindXlsxCellsFormat.cellOfString(row, seller.getXlsPriceRules().getColumnTnved() - 1).trim());
                 if (seller.getXlsPriceRules().getColumnBarcode() != 0)
@@ -358,5 +374,455 @@ public class XlsxParse {
         }
         return badParsingInFile;
     }
+
+    public Path createXlsxImage() throws IOException {
+        boolean isSuccess = false;
+
+//        загружаем перечень продавцов
+        List<Seller> arraySellers = new ArrayList<>();
+        arraySellers = sellerRepo.findAll();
+//        находим главного продавца (собственный прайс)
+        Seller mainSeller = new Seller();
+        for (Seller arraySeller : arraySellers) {
+            if (arraySeller.getIsGeneralPrice()) mainSeller = arraySeller;
+        }
+//        System.out.println("mainSeller = " + mainSeller);
+//        System.out.println("arraySellers = " + arraySellers);
+//        System.out.println("arraySellers = " + arraySellers.size());
+
+//        запрос данных из БД по собственному прайсу
+        LocalDate dateNow = LocalDate.now();
+        List<TotalPrice> sellerPriceFromDB;
+        sellerPriceFromDB = totalPriceRepo.findByDateAndIdSaler(dateNow, mainSeller);
+        System.out.println("arrayTotalPrice size = " + sellerPriceFromDB.size());
+//        System.out.println("arrayTotalPrice = " + sellerPriceFromDB);
+
+
+        ArrayList<FullPrice> fullPricesForXlsx = new ArrayList<>();
+
+
+        for (TotalPrice sellerPrice : sellerPriceFromDB) {
+            FullPrice addToPrice = new FullPrice();
+
+            addToPrice.setBarcode(sellerPrice.getBarcode());
+            addToPrice.setTnvedCode(sellerPrice.getTnvedCode());
+            addToPrice.setBrand(sellerPrice.getIdBrand().getBrandName().toUpperCase());
+            addToPrice.setArticle(sellerPrice.getArticle());
+            addToPrice.setProductName(sellerPrice.getProductName());
+
+            addToPrice.setOnStock(sellerPrice.getOnStock());
+            addToPrice.setOnStockReserved(sellerPrice.getReservationOnStock().toString());
+            addToPrice.setOnStockFree(sellerPrice.getFreeOnStock().toString());
+
+            addToPrice.setRetailPrice(sellerPrice.getPriceForSaleOwn());
+            addToPrice.setOurPrice(sellerPrice.getPrice());
+
+            fullPricesForXlsx.add(addToPrice);
+        }
+
+        List<String> sellersNames = new ArrayList<>();
+//        ДОБАВЛЕНИЕ ОСТАЛЬНЫХ ПРАЙСОВ (первый)
+//      добавляем в массив значения цен и остатков по товарам от продавцов
+        addSellersPrices(fullPricesForXlsx, arraySellers, sellersNames);
+
+//        обнуление всех пустых ячеек в ценах
+        for (FullPrice priceStr : fullPricesForXlsx) {
+            if (priceStr.getOurPrice() == null) priceStr.setOurPrice(BigDecimal.ZERO);
+            else {
+                BigDecimal roundedPrice = priceStr.getOurPrice().setScale(2, RoundingMode.HALF_UP);
+                priceStr.setOurPrice(roundedPrice);
+            }
+            if (priceStr.getRetailPrice() == null) priceStr.setRetailPrice(BigDecimal.ZERO);
+            if (priceStr.getSellerPrice1() == null) priceStr.setSellerPrice1(BigDecimal.ZERO);
+            if (priceStr.getSellerPrice2() == null) priceStr.setSellerPrice2(BigDecimal.ZERO);
+            if (priceStr.getSellerPrice3() == null) priceStr.setSellerPrice3(BigDecimal.ZERO);
+        }
+//        вызываем метод для сохранения прайса на диск
+
+//        FullPrice.saveXLSX(fullPricesForXlsx, sellersNames);
+
+        return FullPrice.saveXLSX(fullPricesForXlsx, sellersNames);
+    }
+
+    public void roundPrice(ArrayList<FullPrice> fullPricesForXlsx) {
+        //        обнуление всех пустых ячеек в ценах
+
+        for (FullPrice priceStr : fullPricesForXlsx) {
+            if (priceStr.getOurPrice() == null) priceStr.setOurPrice(BigDecimal.ZERO);
+            else {
+                BigDecimal roundedPrice = priceStr.getOurPrice().setScale(2, RoundingMode.HALF_UP);
+                priceStr.setOurPrice(roundedPrice);
+            }
+            // Обработка значения RetailPrice
+            if (priceStr.getRetailPrice() == null) {
+                priceStr.setRetailPrice(BigDecimal.ZERO);
+            } else {
+                BigDecimal roundedRetailPrice = priceStr.getRetailPrice().setScale(2, RoundingMode.HALF_UP);
+                priceStr.setRetailPrice(roundedRetailPrice);
+            }
+            // Обработка значения SellerPrice1
+            if (priceStr.getSellerPrice1() == null) {
+                priceStr.setSellerPrice1(BigDecimal.ZERO);
+            } else {
+                BigDecimal roundedSellerPrice1 = priceStr.getSellerPrice1().setScale(2, RoundingMode.HALF_UP);
+                priceStr.setSellerPrice1(roundedSellerPrice1);
+            }
+            // Обработка значения SellerPrice2
+            if (priceStr.getSellerPrice2() == null) {
+                priceStr.setSellerPrice2(BigDecimal.ZERO);
+            } else {
+                BigDecimal roundedSellerPrice2 = priceStr.getSellerPrice2().setScale(2, RoundingMode.HALF_UP);
+                priceStr.setSellerPrice2(roundedSellerPrice2);
+            } // Обработка значения SellerPrice3
+            if (priceStr.getSellerPrice3() == null) {
+                priceStr.setSellerPrice3(BigDecimal.ZERO);
+            } else {
+                BigDecimal roundedSellerPrice3 = priceStr.getSellerPrice3().setScale(2, RoundingMode.HALF_UP);
+                priceStr.setSellerPrice3(roundedSellerPrice3);
+            }
+
+        }
+
+    }
+
+
+    public void addSellersPrices(ArrayList<FullPrice> fullPricesForXlsx, List<Seller> arraySellers, List<String> sellersNames) {
+
+        Seller seller1 = null;
+        Seller seller2 = null;
+        Seller seller3 = null;
+
+        int assignedCount = 0;
+
+        for (Seller seller : arraySellers) {
+            if (!seller.getIsGeneralPrice() && seller.getId() != null) {
+                switch (assignedCount) {
+                    case 0:
+                        seller1 = seller;
+                        sellersNames.add(seller1.getPriceName());
+                        break;
+                    case 1:
+                        seller2 = seller;
+                        sellersNames.add(seller2.getPriceName());
+                        break;
+                    case 2:
+                        seller3 = seller;
+                        sellersNames.add(seller3.getPriceName());
+                        break;
+                    default:
+                        System.out.println("Больше трех продавцов невозможно присвоить.");
+                        break;
+                }
+                assignedCount++;
+            }
+        }
+
+        // Выводим результаты для проверки
+        System.out.println("Seller 1: " + (seller1 != null ? seller1 : "не назначен"));
+        System.out.println("Seller 2: " + (seller2 != null ? seller2 : "не назначен"));
+        System.out.println("Seller 3: " + (seller3 != null ? seller3 : "не назначен"));
+
+
+        int size = arraySellers.size();
+
+        switch (size) {
+//            case 1:
+//                System.out.println("Размер массива: 1. Обработка одного продавца.");
+//                // Логика для одного продавца
+////                handleOneSeller(arraySellers.get(0));
+//                break;
+            case 2:
+                System.out.println("Размер массива: 2. Обработка одного продавца.");
+                // Логика для двух продавцов
+                addSeller1(fullPricesForXlsx, seller1);
+//                handleTwoSellers(arraySellers.get(0), arraySellers.get(1));
+                break;
+            case 3:
+                System.out.println("Размер массива: 3. Обработка двух продавцов.");
+                addSeller1(fullPricesForXlsx, seller1);
+                addSeller2(fullPricesForXlsx, seller2);
+                // Логика для трех продавцов
+//                handleThreeSellers(arraySellers.get(0), arraySellers.get(1), arraySellers.get(2));
+                break;
+            case 4:
+                System.out.println("Размер массива: 3. Обработка трех продавцов.");
+                // Логика для трех продавцов
+                addSeller1(fullPricesForXlsx, seller1);
+                addSeller2(fullPricesForXlsx, seller2);
+                addSeller3(fullPricesForXlsx, seller3);
+//                handleThreeSellers(arraySellers.get(0), arraySellers.get(1), arraySellers.get(2));
+                break;
+            default:
+                System.out.println("Неподдерживаемый размер массива: " + size);
+                // Логика для неподдерживаемого размера массива
+//                handleUnsupportedSize(arraySellers);
+                break;
+        }
+
+
+    }
+
+    private void addSeller1(ArrayList<FullPrice> fullPricesForXlsx, Seller seller) {
+        // Логика для одного продавца
+
+//        for (FullPrice fullPrice : fullPricesForXlsx) {
+//            System.out.println("FULL Price before = " + fullPrice);
+//        }
+
+        //        запрос данных из БД по собственному прайсу
+        LocalDate dateNow = LocalDate.now();
+        List<TotalPrice> sellerPriceFromDB;
+        sellerPriceFromDB = totalPriceRepo.findByDateAndIdSaler(dateNow, seller);
+        // Используем Set для удаления дубликатов
+        Set<TotalPrice> uniqueSellerPricesSet = new HashSet<>(sellerPriceFromDB);
+        // Преобразуем Set обратно в List
+        List<TotalPrice> uniqueSellerPricesList = new ArrayList<>(uniqueSellerPricesSet);
+
+        System.out.println("============= SELLER  1-1-1-1-1 ========  " + seller.getId());
+        int tempCounter = 0;
+        boolean needNewElement = true;
+//        for (FullPrice fullPrice : fullPricesForXlsx) {
+        for (TotalPrice sellerPrice : uniqueSellerPricesList) {
+            FullPrice addToPrice = null;
+//            for (TotalPrice sellerPrice : uniqueSellerPricesList) {
+            for (FullPrice fullPrice : fullPricesForXlsx) {
+
+//                System.out.println("fullPrice.getArticle().toUpperCase() = " + fullPrice.getArticle().toUpperCase());
+//                System.out.println("sellerPrice.getArticle().toUpperCase() = " + sellerPrice.getArticle().toUpperCase());
+//                System.out.println("fullPrice.getBrand().toUpperCase() = " + fullPrice.getBrand().toUpperCase());
+//                System.out.println("sellerPrice.getIdBrand().getBrandName().toUpperCase() = " + sellerPrice.getIdBrand().getBrandName().toUpperCase());
+//
+
+//               элемент с брендом и артикулом найден, - добавляем цену и состояние склада
+                if (fullPrice.getArticle().toUpperCase().equals(sellerPrice.getArticle().toUpperCase())
+                        && fullPrice.getBrand().toUpperCase().equals(sellerPrice.getIdBrand().getBrandName().toUpperCase())) {
+                    tempCounter++;
+//                    System.out.println("tempCounter = " + tempCounter);
+
+                    BigDecimal price = sellerPrice.getPrice();
+                    price = calcRealPrice(seller, price);
+
+                    fullPrice.setSellerPrice1(price);
+
+                    fullPrice.setSellerStock1(sellerPrice.getOnStock());
+                    System.out.println("добавляем цену = " + fullPrice);
+                    needNewElement = false;
+                    break;
+                }
+//               элемент с брендом и артикулом не найден, - заводим артикул, название добавляем цену и состояние склада
+
+            }
+            if (needNewElement == true) {
+
+                addToPrice = new FullPrice();
+                addToPrice.setBrand(sellerPrice.getIdBrand().getBrandName().toUpperCase());
+                addToPrice.setArticle(sellerPrice.getArticle());
+                addToPrice.setProductName(sellerPrice.getProductName());
+
+                BigDecimal price = sellerPrice.getPrice();
+                price = calcRealPrice(seller, price);
+                addToPrice.setSellerPrice1(price);
+                addToPrice.setSellerStock1(sellerPrice.getOnStock());
+
+                fullPricesForXlsx.add(addToPrice);
+//                System.out.println("Добавляем элемент позицию в прайс = " + addToPrice);
+            }
+            needNewElement = true;
+
+        }
+//        System.out.println(" ===================== " );
+//        for (FullPrice fullPrice : fullPricesForXlsx) {
+//            System.out.println("FULL Price after = " + fullPrice);
+//        }
+    }
+
+    private void addSeller2(ArrayList<FullPrice> fullPricesForXlsx, Seller seller) {
+        // Логика для одного продавца
+
+//        for (FullPrice fullPrice : fullPricesForXlsx) {
+//            System.out.println("FULL Price before = " + fullPrice);
+//        }
+
+        //        запрос данных из БД по собственному прайсу
+        LocalDate dateNow = LocalDate.now();
+        List<TotalPrice> sellerPriceFromDB;
+        sellerPriceFromDB = totalPriceRepo.findByDateAndIdSaler(dateNow, seller);
+        // Используем Set для удаления дубликатов
+        Set<TotalPrice> uniqueSellerPricesSet = new HashSet<>(sellerPriceFromDB);
+        // Преобразуем Set обратно в List
+        List<TotalPrice> uniqueSellerPricesList = new ArrayList<>(uniqueSellerPricesSet);
+
+        System.out.println("============= SELLER  2-2-2-2-2 ========  " + seller.getId());
+        int tempCounter = 0;
+        boolean needNewElement = true;
+//        for (FullPrice fullPrice : fullPricesForXlsx) {
+        for (TotalPrice sellerPrice : uniqueSellerPricesList) {
+            FullPrice addToPrice = null;
+//            for (TotalPrice sellerPrice : uniqueSellerPricesList) {
+            for (FullPrice fullPrice : fullPricesForXlsx) {
+//
+//                System.out.println("fullPrice.getArticle().toUpperCase() = " + fullPrice.getArticle().toUpperCase());
+//                System.out.println("sellerPrice.getArticle().toUpperCase() = " + sellerPrice.getArticle().toUpperCase());
+//                System.out.println("fullPrice.getBrand().toUpperCase() = " + fullPrice.getBrand().toUpperCase());
+//                System.out.println("sellerPrice.getIdBrand().getBrandName().toUpperCase() = " + sellerPrice.getIdBrand().getBrandName().toUpperCase());
+
+//               элемент с брендом и артикулом найден, - добавляем цену и состояние склада
+                if (fullPrice.getArticle().toUpperCase().equals(sellerPrice.getArticle().toUpperCase())
+                        && fullPrice.getBrand().toUpperCase().equals(sellerPrice.getIdBrand().getBrandName().toUpperCase())) {
+                    tempCounter++;
+//                    System.out.println("tempCounter = " + tempCounter);
+
+                    BigDecimal price = sellerPrice.getPrice();
+                    price = calcRealPrice(seller, price);
+
+                    fullPrice.setSellerPrice2(price);
+
+                    fullPrice.setSellerStock2(sellerPrice.getOnStock());
+                    System.out.println("добавляем цену в карточку товара = " + fullPrice);
+                    needNewElement = false;
+                    break;
+                }
+//               элемент с брендом и артикулом не найден, - заводим артикул, название добавляем цену и состояние склада
+
+            }
+            if (needNewElement == true) {
+
+                addToPrice = new FullPrice();
+                addToPrice.setBrand(sellerPrice.getIdBrand().getBrandName().toUpperCase());
+                addToPrice.setArticle(sellerPrice.getArticle());
+                addToPrice.setProductName(sellerPrice.getProductName());
+
+                BigDecimal price = sellerPrice.getPrice();
+                price = calcRealPrice(seller, price);
+                addToPrice.setSellerPrice2(price);
+                addToPrice.setSellerStock2(sellerPrice.getOnStock());
+
+                fullPricesForXlsx.add(addToPrice);
+//                System.out.println("Добавляем элемент в прайс = " + addToPrice);
+            }
+            needNewElement = true;
+
+        }
+//        System.out.println(" ===================== " );
+//        for (FullPrice fullPrice : fullPricesForXlsx) {
+//            System.out.println("FULL Price = " + fullPrice);
+//        }
+    }
+
+    private void addSeller3(ArrayList<FullPrice> fullPricesForXlsx, Seller seller) {
+        // Логика для одного продавца
+//        for (FullPrice fullPrice : fullPricesForXlsx) {
+//            System.out.println("FULL Price before = " + fullPrice);
+//        }
+        //        запрос данных из БД по собственному прайсу
+        LocalDate dateNow = LocalDate.now();
+        List<TotalPrice> sellerPriceFromDB;
+        sellerPriceFromDB = totalPriceRepo.findByDateAndIdSaler(dateNow, seller);
+        // Используем Set для удаления дубликатов
+        Set<TotalPrice> uniqueSellerPricesSet = new HashSet<>(sellerPriceFromDB);
+        // Преобразуем Set обратно в List
+        List<TotalPrice> uniqueSellerPricesList = new ArrayList<>(uniqueSellerPricesSet);
+
+        System.out.println("============= SELLER  3-3-3-3-3 ========  " + seller.getId());
+        int tempCounter = 0;
+        boolean needNewElement = true;
+//        for (FullPrice fullPrice : fullPricesForXlsx) {
+        for (TotalPrice sellerPrice : uniqueSellerPricesList) {
+            FullPrice addToPrice = null;
+//            for (TotalPrice sellerPrice : uniqueSellerPricesList) {
+            for (FullPrice fullPrice : fullPricesForXlsx) {
+
+//                System.out.println("fullPrice.getArticle().toUpperCase() = " + fullPrice.getArticle().toUpperCase());
+//                System.out.println("sellerPrice.getArticle().toUpperCase() = " + sellerPrice.getArticle().toUpperCase());
+//                System.out.println("fullPrice.getBrand().toUpperCase() = " + fullPrice.getBrand().toUpperCase());
+//                System.out.println("sellerPrice.getIdBrand().getBrandName().toUpperCase() = " + sellerPrice.getIdBrand().getBrandName().toUpperCase());
+
+//               элемент с брендом и артикулом найден, - добавляем цену и состояние склада
+                if (fullPrice.getArticle().toUpperCase().equals(sellerPrice.getArticle().toUpperCase())
+                        && fullPrice.getBrand().toUpperCase().equals(sellerPrice.getIdBrand().getBrandName().toUpperCase())) {
+                    tempCounter++;
+//                    System.out.println("tempCounter = " + tempCounter);
+
+                    BigDecimal price = sellerPrice.getPrice();
+                    price = calcRealPrice(seller, price);
+
+                    fullPrice.setSellerPrice3(price);
+
+                    fullPrice.setSellerStock3(sellerPrice.getOnStock());
+                    System.out.println("добавляем цену в карточку товара = " + fullPrice);
+                    needNewElement = false;
+                    break;
+                }
+//               элемент с брендом и артикулом не найден, - заводим артикул, название добавляем цену и состояние склада
+            }
+            if (needNewElement == true) {
+
+                addToPrice = new FullPrice();
+                addToPrice.setBrand(sellerPrice.getIdBrand().getBrandName().toUpperCase());
+                addToPrice.setArticle(sellerPrice.getArticle());
+                addToPrice.setProductName(sellerPrice.getProductName());
+
+                BigDecimal price = sellerPrice.getPrice();
+                price = calcRealPrice(seller, price);
+                addToPrice.setSellerPrice3(price);
+                addToPrice.setSellerStock3(sellerPrice.getOnStock());
+
+                fullPricesForXlsx.add(addToPrice);
+//                System.out.println("Добавляем элемент в прайс  = " + addToPrice);
+            }
+            needNewElement = true;
+
+        }
+//        System.out.println(" ===================== " );
+//        for (FullPrice fullPrice : fullPricesForXlsx) {
+//            System.out.println("FULL Price after = " + fullPrice);
+//        }
+    }
+
+    private BigDecimal calcRealPrice(Seller seller, BigDecimal price) {
+
+        LocalDate localDate = LocalDate.now();
+        BigDecimal sellerCourse = BigDecimal.valueOf(1);
+        List<CurrencyRate> currencyRates = currencyRateRepo.findByDate(localDate);
+//        System.out.println("currencyRates = " + currencyRates);
+//        System.out.println("seller.getEconomicRules().getCurrencyCode() = " + seller.getEconomicRules().getCurrencyCode());
+        if (!seller.getEconomicRules().getCurrencyCode().equals(933)) {
+            for (CurrencyRate currencyRate : currencyRates) {
+                if (currencyRate.getCurrency().equals(seller.getEconomicRules().getCurrencyCode())) {
+                    sellerCourse = currencyRate.getCurrencyRate();
+                    break;
+                }
+            }
+        }
+
+//        System.out.println("sellerCourse = " + sellerCourse);
+//        System.out.println("price = " + price);
+        price = price.multiply(sellerCourse);
+
+//        System.out.println("price * currencyCourse = " + price);
+//        System.out.println("currencyCoefficient = " + seller.getEconomicRules().getCurrencyCoefficient());
+        price = price.multiply(seller.getEconomicRules().getCurrencyCoefficient());
+//        System.out.println("price * currencyCoefficient = " + price);
+        price = price.multiply(seller.getEconomicRules().getDeliveryCoefficient());
+//        System.out.println("price * deliveryCoefficient = " + price);
+        BigDecimal vatCoeff = BigDecimal.valueOf(100);
+//        System.out.println("vatCoeff = 100? ??? " + vatCoeff);
+        vatCoeff = vatCoeff.add(seller.getEconomicRules().getVatPercentInPrice());
+//        System.out.println("vatCoeff = 100?+ процент из БД  ??? " + vatCoeff + " процент из БД = " + seller.getEconomicRules().getVatPercentInPrice());
+        vatCoeff = vatCoeff.divide(BigDecimal.valueOf(120), 6, RoundingMode.HALF_UP);
+
+        price = price.divide(vatCoeff, 2, RoundingMode.HALF_UP);
+//        System.out.println("vatCoeff = " + vatCoeff);
+//        System.out.println("price * vatCoeff = " + price);
+
+        return price;
+    }
+
+
 }
+
+
+
+
+
 

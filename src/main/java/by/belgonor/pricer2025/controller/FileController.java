@@ -17,6 +17,7 @@ import java.io.File;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -103,6 +104,7 @@ public class FileController {
     public String createCompareFile(@RequestBody List<Seller> sellers) throws IOException {
 // Пример использования данных поставщиков
 //        System.out.println("sellers = " + sellers);
+        String fileName = "";
         List<Seller> fullSellersList = new ArrayList<>();
 
         System.out.println(" ===== Получение недостающих данных для каждого Seller из репозитория  ");
@@ -117,30 +119,29 @@ public class FileController {
             }
         }
 //       проверка курсов валюты, если их нет, то записывает актуальные курсы из Альфабанка
-        System.out.println(" =================   проверяем курсы валюты ============= " );
+        System.out.println(" =================   проверяем курсы валюты ============= ");
         alfaBankCoursesService.checkNbCourses(fullSellersList);
-        System.out.println(" =================    курсы валюты    OK ============= " );
+        System.out.println(" =================    курсы валюты    OK ============= ");
 //        Проверяет наличие ошибок в шапке каждого из продавцов
-        System.out.println(" =================   проверяем headers ============= " );
+        System.out.println(" =================   проверяем headers ============= ");
         String failCollumnsNumbers = xlsxParse.checkFailInAllSellersHeaders(fullSellersList);
         if (failCollumnsNumbers.isEmpty()) {
             System.out.println("Все значения в шапках поставщиков совпадают!!!! " + failCollumnsNumbers);
-            System.out.println(" =================    headers    проверка завершена положительно!!!   ============= " );
+            System.out.println(" =================    headers    проверка завершена положительно!!!   ============= ");
 
 //        ==================    Парсинг файлов     ================
-            System.out.println(" ========= Начат парсинг файлов =======  " );
+
+            System.out.println(" ========= Начат парсинг файлов =======  ");
             String parsingError = xlsxParse.parseAllXlsxFiles(fullSellersList);
-            System.out.println("Печать из FileController parsingError = " + parsingError);
+            System.out.println("Печать из FileController parsingError (если пусто, то ОК) = " + parsingError);
+
+//            boolean isXlsxFileImageCreated = xlsxParse.createXlsxImage();
+            Path isXlsxFileImageCreated = xlsxParse.createXlsxImage();
+
+
+            fileName = isXlsxFileImageCreated.getFileName().toString();
+
         }
-        else {
-            System.out.println("Обнаружена ошибка failCollumnsNumbers = " + failCollumnsNumbers);
-        }
-
-
-
-
-
-        String fileName = "Тут будет имя файла";
         return fileName;
     }
 }

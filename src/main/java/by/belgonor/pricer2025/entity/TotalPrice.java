@@ -20,7 +20,8 @@ public class TotalPrice {
     @Column(name = "id", nullable = false)
     private Integer id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    //    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false, cascade = CascadeType.ALL)
     @JoinColumn(name = "id_brand")
     private Brand idBrand;
 
@@ -76,4 +77,26 @@ public class TotalPrice {
     @Column(name = "product_name", length = 300)
     private String productName;
 
+
+    @Override
+    public String toString() {
+        return "TotalPrice{" +
+                "id=" + id +
+                ", idBrand=" + idBrand +
+                ", idSaler=" + idSaler +
+                ", currencyCode=" + currencyCode +
+                ", date=" + date +
+                ", article='" + article + '\'' +
+                ", productCategory='" + productCategory + '\'' +
+                ", price=" + price +
+                ", onStock='" + onStock + '\'' +
+                ", tnvedCode='" + tnvedCode + '\'' +
+                ", barcode='" + barcode + '\'' +
+                ", priceOnStockOwn=" + priceOnStockOwn +
+                ", reservationOnStock=" + reservationOnStock +
+                ", freeOnStock=" + freeOnStock +
+                ", priceForSaleOwn=" + priceForSaleOwn +
+                ", productName='" + productName + '\'' +
+                '}';
+    }
 }

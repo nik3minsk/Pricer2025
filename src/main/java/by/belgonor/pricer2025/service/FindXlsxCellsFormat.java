@@ -10,26 +10,57 @@ public class FindXlsxCellsFormat {
 
 
     //      не проверено
+//    public static BigDecimal cellOfBigDecimal(XSSFRow row, Integer cellNumber) {
+//        BigDecimal cellValue = BigDecimal.valueOf(0);
+//        if (row.getCell(cellNumber) != null) {
+//            switch (row.getCell(cellNumber).getCellType()) {
+//                case STRING:
+//                    cellValue = BigDecimal.valueOf(0);
+//                    break;
+//                case NUMERIC:
+//                    cellValue = BigDecimal.valueOf(row.getCell(cellNumber).getNumericCellValue());
+//                    break;
+//                case FORMULA:
+////                        result +=  cell.getNumericCellValue() ;
+//                    break;
+//                default:
+////                        result += "|";
+//                    break;
+//            }
+//        }
+//        return cellValue;
+//    }
+
     public static BigDecimal cellOfBigDecimal(XSSFRow row, Integer cellNumber) {
         BigDecimal cellValue = BigDecimal.valueOf(0);
         if (row.getCell(cellNumber) != null) {
             switch (row.getCell(cellNumber).getCellType()) {
                 case STRING:
-                    cellValue = BigDecimal.valueOf(0);
+                    String stringValue = row.getCell(cellNumber).getStringCellValue();
+                    // Удаляем пробелы спереди и сзади и заменяем запятые на точки
+                    stringValue = stringValue.trim().replace(",", ".");
+                    try {
+                        cellValue = new BigDecimal(stringValue);
+                    } catch (NumberFormatException e) {
+                        // Логируем или обрабатываем ошибку, если строка не может быть конвертирована в BigDecimal
+                        cellValue = BigDecimal.valueOf(0);
+                    }
                     break;
                 case NUMERIC:
                     cellValue = BigDecimal.valueOf(row.getCell(cellNumber).getNumericCellValue());
                     break;
                 case FORMULA:
-//                        result +=  cell.getNumericCellValue() ;
+                    // Обработка формул (если необходимо)
                     break;
                 default:
-//                        result += "|";
+                    // Обработка остальных типов (если необходимо)
                     break;
             }
         }
         return cellValue;
     }
+
+
 
     public static Integer cellOfInteger(XSSFRow row, Integer cellNumber) {
 
