@@ -72,6 +72,7 @@ public class SellerController {
 //        вызываем метод парсинга значений заголовков таблицы прайса
         XlsxParse.parseXlsxHeader(fileToRead, headerStringNumber, rulesForXlsx, xlsxHeaderValue);
 
+//        xlsxHeaderValueRepo.save(xlsxHeaderValue);
         xlsxHeaderValueRepo.save(xlsxHeaderValue);
 
 

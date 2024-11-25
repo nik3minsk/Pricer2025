@@ -14,6 +14,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.DefaultIndexedColorMap;
+import org.apache.poi.xssf.usermodel.XSSFColor;
 import org.apache.poi.xssf.usermodel.XSSFFont;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
@@ -71,9 +73,9 @@ public class FullPrice {
         sheet.setColumnWidth(2, 4000);
         sheet.setColumnWidth(3, 3000);
         sheet.setColumnWidth(4, 14000);
-        sheet.setColumnWidth(5, 3000);
-        sheet.setColumnWidth(6, 3000);
-        sheet.setColumnWidth(7, 3000);
+        sheet.setColumnWidth(5, 2500);
+        sheet.setColumnWidth(6, 2500);
+        sheet.setColumnWidth(7, 2500);
         sheet.setColumnWidth(8, 3000);
         sheet.setColumnWidth(9, 3000);
         sheet.setColumnWidth(10, 3000);
@@ -88,7 +90,10 @@ public class FullPrice {
         //        прописываем стиль заголовка 12 высота, шрифт Ариал, фон синий
         CellStyle headerStyle = workbook.createCellStyle();
         headerStyle.setAlignment(HorizontalAlignment.CENTER);
-        headerStyle.setFillForegroundColor(IndexedColors.LIGHT_BLUE.getIndex());
+        XSSFColor lightBlue = new XSSFColor(new java.awt.Color(224, 255, 255), new DefaultIndexedColorMap());
+        headerStyle.setFillForegroundColor(lightBlue);
+//        headerStyle.setFillForegroundColor(IndexedColors.LIGHT_BLUE.getIndex());
+//        headerStyle.setFillForegroundColor(IndexedColors.LIGHT_BLUE.getIndex());
         headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
 
         XSSFFont font = ((XSSFWorkbook) workbook).createFont();
@@ -191,6 +196,25 @@ public class FullPrice {
 //        standartFont.setBold(true);
         standartStyle.setFont(standartFont);
 
+
+        //     ?   прописываем стиль заголовка 12 высота, шрифт Ариал, фон белый
+        CellStyle standartStyleLeft = workbook.createCellStyle();
+        standartStyleLeft.setFillForegroundColor(IndexedColors.WHITE1.getIndex());
+//        standartStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+        standartStyleLeft.setAlignment(HorizontalAlignment.LEFT);
+// ?
+        DataFormat formatLeft = workbook.createDataFormat();
+        standartStyleLeft.setDataFormat(formatLeft.getFormat("0.00"));
+
+
+        XSSFFont standartFontLeft = ((XSSFWorkbook) workbook).createFont();
+        standartFontLeft.setFontName("Arial");
+        standartFontLeft.setFontHeightInPoints((short) 11);
+//        standartFont.setBold(true);
+        standartStyleLeft.setFont(standartFontLeft);
+
+
+
         //    ?    зеленый фон ячеек для выделения минимальных цен
         CellStyle greenStyle = workbook.createCellStyle();
         greenStyle.setFillForegroundColor(IndexedColors.LIGHT_GREEN.getIndex());
@@ -223,7 +247,7 @@ public class FullPrice {
             cell.setCellStyle(standartStyle);
             cell = row.createCell(4);
             cell.setCellValue(fullPricesForXlsx.get(i).productName);
-            cell.setCellStyle(standartStyle);
+            cell.setCellStyle(standartStyleLeft);
             cell = row.createCell(5);
             cell.setCellValue(fullPricesForXlsx.get(i).onStock);
             cell.setCellStyle(standartStyle);
@@ -302,7 +326,9 @@ public class FullPrice {
         java.time.LocalDateTime currentDateTime = java.time.LocalDateTime.now();
 
 //        String fileLocation = path.substring(0, path.length() - 1) + "temp.xlsx";
-        String fileLocation = path.substring(0, path.length() - 1) + "compare_" + currentDateTime.toString().substring(0, 19) + ".xlsx";
+//        String fileLocation = path.substring(0, path.length() - 1) + "compare_" + currentDateTime.toString().substring(0, 19) + ".xlsx";
+
+        String fileLocation = path + "compare_result_from_" + currentDateTime.toString().replace(":", "_") + ".xlsx";
 
         FileOutputStream outputStream = new FileOutputStream(fileLocation);
         workbook.write(outputStream);
